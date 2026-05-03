@@ -9,8 +9,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.gleam.app.entity.PointHistory;
+
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -41,9 +45,15 @@ public class MemberService {
     /** 購入履歴 */
     public List<PurchaseDto> getMyPurchases(Long memberId) {
         Member member = findMemberById(memberId);
+        Set<Long> grantedPurchaseIds = pointHistoryRepository
+            .findByMemberAndTransactionType(member, PointHistory.TransactionType.GRANT)
+            .stream()
+            .filter(ph -> ph.getRelatedPurchase() != null)
+            .map(ph -> ph.getRelatedPurchase().getId())
+            .collect(Collectors.toSet());
         return purchaseRepository.findByMemberOrderByPurchasedAtDesc(member)
             .stream()
-            .map(PurchaseDto::from)
+            .map(p -> PurchaseDto.from(p, grantedPurchaseIds.contains(p.getId())))
             .toList();
     }
 

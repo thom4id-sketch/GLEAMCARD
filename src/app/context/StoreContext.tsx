@@ -38,7 +38,8 @@ export interface Purchase {
   storeName: string;
   amount: number;
   pointsUsed: number;
-  pointsGranted: number;
+  pointsToGrant: number;
+  pointsGranted: boolean;
   couponUsed: boolean;
   date: string;
   status: 'completed' | 'canceled';
@@ -77,6 +78,7 @@ interface PurchaseApi {
   amount: number;
   pointsUsed: number;
   pointsToGrant: number;
+  pointsGranted: boolean;
   couponUsed: boolean;
   purchasedAt: string;
   status: string;
@@ -175,7 +177,8 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
         storeName: p.storeName,
         amount: p.amount,
         pointsUsed: p.pointsUsed,
-        pointsGranted: p.pointsToGrant,
+        pointsToGrant: p.pointsToGrant,
+        pointsGranted: p.pointsGranted,
         couponUsed: p.couponUsed,
         date: p.purchasedAt,
         status: p.status === 'CANCELED' ? 'canceled' : 'completed',

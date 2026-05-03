@@ -12,9 +12,10 @@ public record PurchaseDto(
     int pointsToGrant,
     boolean couponUsed,
     OffsetDateTime purchasedAt,
-    String status
+    String status,
+    boolean pointsGranted
 ) {
-    public static PurchaseDto from(Purchase purchase) {
+    public static PurchaseDto from(Purchase purchase, boolean pointsGranted) {
         return new PurchaseDto(
             purchase.getId(),
             purchase.getStore().getName(),
@@ -23,7 +24,8 @@ public record PurchaseDto(
             purchase.getPointsToGrant(),
             purchase.getCoupon() != null,
             purchase.getPurchasedAt(),
-            purchase.getStatus().name()
+            purchase.getStatus().name(),
+            pointsGranted
         );
     }
 }
