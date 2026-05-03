@@ -34,6 +34,21 @@ interface AuthState {
   refreshUser: () => Promise<void>;
 }
 
+// ─── 開発用モックユーザー ───────────────────────────────
+const MOCK_USER: MemberDto = {
+  id: 1,
+  memberNo: '10001',
+  name: '山田 太郎（開発用）',
+  rank: 'GOLD',
+  pointRate: 0.08,
+  points: 1200,
+  annualPurchaseAmount: 65000,
+  rankExpiresAt: null,
+};
+// ────────────────────────────────────────────────────────
+
+const IS_DEV_MOCK = import.meta.env.VITE_DEV_MOCK_AUTH === 'true';
+
 const AuthContext = createContext<AuthState | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -50,6 +65,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const init = async () => {
       const adminMode = window.location.pathname.startsWith('/admin');
+
+      // ── 開発モック：LIFF・バックエンドをスキップ ──────────────
+      if (IS_DEV_MOCK) {
+        const mockAdmin = import.meta.env.VITE_DEV_MOCK_ADMIN === 'true' || adminMode;
+        console.info('[Auth] DEV MOCK MODE — LIFF / backend auth skipped');
+        setIsAdmin(mockAdmin);
+        setCurrentUser(MOCK_USER);
+        setStatus('ready');
+        return;
+      }
+      // ────────────────────────────────────────────────────────
+
       setIsAdmin(adminMode);
 
       const targetLiffId = adminMode
@@ -99,6 +126,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const completeRegistration = async () => {
+    // 開発モック時は登録不要
+    if (IS_DEV_MOCK) {
+      setCurrentUser(MOCK_USER);
+      setStatus('ready');
+      return;
+    }
+
     if (!liffAccessToken || !liffId) throw new Error('認証情報が不足しています');
 
     const res = await api.post<AuthResponse>('/api/auth/register', {
@@ -114,6 +148,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const refreshUser = async () => {
+    if (IS_DEV_MOCK) return; // モック時は何もしない
     const res = await api.get<MemberDto>('/api/me');
     setCurrentUser(res);
   };
