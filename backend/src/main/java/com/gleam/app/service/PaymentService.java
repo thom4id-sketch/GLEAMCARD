@@ -63,8 +63,16 @@ public class PaymentService {
             }
         }
 
-        // --- 付与ポイント計算（現在のランクで計算 → ランク更新は後に行う）---
-        int pointsToGrant = (int) Math.floor(req.amount() * member.getRank().getPointRate());
+        // --- 付与ポイント計算（クーポン割引後の金額を基準にする）---
+        int effectiveAmount = req.amount();
+        if (coupon != null) {
+            if (coupon.getDiscountType() == Coupon.DiscountType.PERCENT) {
+                effectiveAmount = (int) Math.floor(req.amount() * (100 - coupon.getDiscountValue()) / 100.0);
+            } else {
+                effectiveAmount = Math.max(0, req.amount() - coupon.getDiscountValue());
+            }
+        }
+        int pointsToGrant = (int) Math.floor(effectiveAmount * member.getRank().getPointRate());
 
         // --- Purchase 登録 ---
         Purchase purchase = purchaseRepository.save(Purchase.builder()
