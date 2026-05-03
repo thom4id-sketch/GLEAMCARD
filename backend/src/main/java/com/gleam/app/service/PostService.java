@@ -1,6 +1,5 @@
 package com.gleam.app.service;
 
-import com.gleam.app.config.AppProperties;
 import com.gleam.app.dto.post.PostDto;
 import com.gleam.app.entity.Member;
 import com.gleam.app.entity.Post;
@@ -14,11 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.Set;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -30,9 +26,7 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final MemberRepository memberRepository;
-    private final AppProperties appProperties;
 
-    /** ブログ一覧取得（作成日降順） */
     @Transactional(readOnly = true)
     public Page<PostDto> getPosts(int page, int size) {
         return postRepository
@@ -40,18 +34,24 @@ public class PostService {
             .map(PostDto::from);
     }
 
-    /** ブログ投稿（管理者用）。画像をアップロードディレクトリに保存してDBに登録する。 */
     public PostDto createPost(Long memberId, String title, String linkUrl, MultipartFile image) {
         validateImage(image);
 
         Member postedBy = memberRepository.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("Member not found: " + memberId));
 
-        String filename = saveImage(image);
+        String contentType = image.getContentType();
+        String base64;
+        try {
+            base64 = Base64.getEncoder().encodeToString(image.getBytes());
+        } catch (IOException e) {
+            throw new RuntimeException("画像の読み込みに失敗しました", e);
+        }
 
         Post post = postRepository.save(Post.builder()
             .title(title)
-            .imagePath(filename)
+            .imageData(base64)
+            .imageContentType(contentType)
             .linkUrl(linkUrl)
             .postedBy(postedBy)
             .build());
@@ -67,27 +67,5 @@ public class PostService {
         if (contentType == null || !ALLOWED_CONTENT_TYPES.contains(contentType)) {
             throw new IllegalArgumentException("対応していない画像形式です（JPEG/PNG/WebP）");
         }
-    }
-
-    /**
-     * 画像をアップロードディレクトリに保存し、ファイル名を返す。
-     * ファイル名は UUID + 元の拡張子（例: a1b2c3d4.jpg）。
-     */
-    private String saveImage(MultipartFile image) {
-        String originalFilename = image.getOriginalFilename();
-        String ext = (originalFilename != null && originalFilename.contains("."))
-            ? originalFilename.substring(originalFilename.lastIndexOf('.'))
-            : ".jpg";
-        String filename = UUID.randomUUID() + ext;
-
-        try {
-            Path uploadDir = Paths.get(appProperties.getUpload().getDir());
-            Files.createDirectories(uploadDir);
-            image.transferTo(uploadDir.resolve(filename));
-        } catch (IOException e) {
-            throw new RuntimeException("画像の保存に失敗しました", e);
-        }
-
-        return filename;
     }
 }

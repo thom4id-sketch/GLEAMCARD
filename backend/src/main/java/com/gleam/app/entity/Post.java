@@ -18,8 +18,11 @@ public class Post {
     @Column(nullable = false, length = 200)
     private String title;
 
-    @Column(name = "image_path", nullable = false, length = 500)
-    private String imagePath;
+    @Column(name = "image_data", nullable = false, columnDefinition = "TEXT")
+    private String imageData;
+
+    @Column(name = "image_content_type", nullable = false, length = 50)
+    private String imageContentType;
 
     @Column(name = "link_url", length = 500)
     private String linkUrl;

@@ -56,7 +56,7 @@ export interface PointHistory {
 interface PostApi {
   id: number;
   title: string;
-  imageUrl: string;
+  imageData: string;
   linkUrl: string;
   createdAt: string;
 }
@@ -199,7 +199,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
     setPosts(res.content.map(p => ({
       id: String(p.id),
       title: p.title,
-      image: p.imageUrl,
+      image: p.imageData,
       url: p.linkUrl ?? '',
       date: p.createdAt,
     })));

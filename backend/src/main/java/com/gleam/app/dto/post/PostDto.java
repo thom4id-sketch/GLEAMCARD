@@ -7,7 +7,7 @@ import java.time.OffsetDateTime;
 public record PostDto(
     Long id,
     String title,
-    String imageUrl,    // /uploads/{filename} 形式
+    String imageData,   // data:{contentType};base64,{base64} 形式
     String linkUrl,
     OffsetDateTime createdAt
 ) {
@@ -15,7 +15,7 @@ public record PostDto(
         return new PostDto(
             post.getId(),
             post.getTitle(),
-            "/uploads/" + post.getImagePath(),
+            "data:" + post.getImageContentType() + ";base64," + post.getImageData(),
             post.getLinkUrl(),
             post.getCreatedAt()
         );
