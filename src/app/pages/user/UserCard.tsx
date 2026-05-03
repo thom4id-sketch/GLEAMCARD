@@ -1,10 +1,12 @@
+import { useState } from "react";
 import { Link } from "react-router";
 import { useStore } from "../../context/StoreContext";
 import QRCode from "react-qr-code";
-import { Award } from "lucide-react";
+import { Award, X, ZoomIn } from "lucide-react";
 
 export const UserCard = () => {
   const { currentUser } = useStore();
+  const [qrZoomed, setQrZoomed] = useState(false);
 
   const rankColors = {
     Regular: "bg-[#4a4a4a] text-white",
@@ -72,12 +74,15 @@ export const UserCard = () => {
       </div>
 
       {/* QR Code */}
-      <div className="bg-white border border-[#d0d0d0] p-6 flex flex-col items-center w-full max-w-sm flex-shrink-0 relative shadow-sm">
+      <button
+        onClick={() => setQrZoomed(true)}
+        className="bg-white border border-[#d0d0d0] p-6 flex flex-col items-center w-full max-w-sm flex-shrink-0 relative shadow-sm active:bg-[#f8f9fa] transition"
+      >
         <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-[#a0a0a0] -ml-[1px] -mt-[1px]"></div>
         <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-[#a0a0a0] -mr-[1px] -mt-[1px]"></div>
         <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-[#a0a0a0] -ml-[1px] -mb-[1px]"></div>
         <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-[#a0a0a0] -mr-[1px] -mb-[1px]"></div>
-        
+
         <p className="text-[10px] tracking-widest text-[#5a5a5a] mb-5 font-bold font-serif">
           SCAN AT REGISTER
         </p>
@@ -87,7 +92,44 @@ export const UserCard = () => {
         <p className="mt-4 text-[11px] text-[#7a7a7a] font-mono tracking-widest">
           {currentUser.memberNo}
         </p>
-      </div>
+        <div className="mt-3 flex items-center space-x-1 text-[#a0a0a0]">
+          <ZoomIn size={12} strokeWidth={1} />
+          <span className="text-[10px] tracking-widest">タップして拡大</span>
+        </div>
+      </button>
+
+      {/* QR Zoom Modal */}
+      {qrZoomed && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex flex-col items-center justify-center"
+          onClick={() => setQrZoomed(false)}
+        >
+          <div
+            className="bg-white p-8 flex flex-col items-center relative mx-6 w-full max-w-xs"
+            onClick={e => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setQrZoomed(false)}
+              className="absolute top-3 right-3 text-[#a0a0a0] hover:text-[#5a5a5a] transition"
+            >
+              <X size={20} strokeWidth={1} />
+            </button>
+            <p className="text-[10px] tracking-widest text-[#5a5a5a] mb-6 font-bold font-serif">
+              SCAN AT REGISTER
+            </p>
+            <div className="bg-white p-2">
+              <QRCode value={currentUser.memberNo} size={220} fgColor="#333333" />
+            </div>
+            <p className="mt-5 text-sm text-[#5a5a5a] font-mono tracking-widest font-bold">
+              {currentUser.memberNo}
+            </p>
+            <p className="mt-1 text-[10px] text-[#a0a0a0] tracking-widest">
+              {currentUser.name}
+            </p>
+          </div>
+          <p className="mt-6 text-white/50 text-[10px] tracking-widest">タップして閉じる</p>
+        </div>
+      )}
 
       {/* Points Info */}
       <div className="w-full max-w-sm bg-[#ececec] text-[#4a4a4a] border border-[#d0d0d0] py-5 px-6 flex justify-between items-center flex-shrink-0 shadow-sm">

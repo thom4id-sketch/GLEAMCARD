@@ -24,15 +24,17 @@ interface PageResponse {
 
 export const AdminHistory = () => {
   const [items, setItems] = useState<PaymentHistoryItem[]>([]);
-  const [filterNo, setFilterNo] = useState('');
+  const [filterName, setFilterName] = useState('');
+  const [exactMatch, setExactMatch] = useState(false);
   const [loading, setLoading] = useState(false);
   const [cancelingId, setCancelingId] = useState<number | null>(null);
 
-  const load = useCallback(async (memberNo?: string) => {
+  const load = useCallback(async (name?: string, exact?: boolean) => {
     setLoading(true);
     try {
-      const query = memberNo ? `?memberNo=${encodeURIComponent(memberNo)}&size=50` : '?size=50';
-      const res = await api.get<PageResponse>(`/api/admin/payments${query}`);
+      const params = new URLSearchParams({ size: '50' });
+      if (name) { params.set('name', name); params.set('exact', String(exact ?? false)); }
+      const res = await api.get<PageResponse>(`/api/admin/payments?${params}`);
       setItems(res.content);
     } finally {
       setLoading(false);
@@ -41,7 +43,7 @@ export const AdminHistory = () => {
 
   useEffect(() => { load(); }, [load]);
 
-  const handleSearch = () => load(filterNo.trim() || undefined);
+  const handleSearch = () => load(filterName.trim() || undefined, exactMatch);
 
   const handleCancel = async (id: number) => {
     if (!window.confirm('この決済を取り消しますか？\n（ポイントやクーポンの利用状況も元に戻ります）')) return;
@@ -63,13 +65,13 @@ export const AdminHistory = () => {
           <FileText className="w-5 h-5 mr-2 stroke-1" />
           決済履歴管理
         </h2>
-        <div className="flex space-x-0 border border-[#d0d0d0] bg-[#f8f9fa] p-1">
+        <div className="flex space-x-0 border border-[#d0d0d0] bg-[#f8f9fa] p-1 mb-2">
           <div className="relative flex-1">
             <input
               type="text"
-              placeholder="会員番号で絞り込み..."
-              value={filterNo}
-              onChange={e => setFilterNo(e.target.value)}
+              placeholder="名前で絞り込み..."
+              value={filterName}
+              onChange={e => setFilterName(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSearch()}
               className="w-full bg-transparent pl-10 pr-3 py-3 text-sm focus:outline-none text-[#4a4a4a]"
             />
@@ -80,6 +82,22 @@ export const AdminHistory = () => {
             className="bg-[#5a5a5a] text-white px-5 py-3 text-xs tracking-widest font-bold hover:bg-[#4a4a4a] transition"
           >
             検索
+          </button>
+        </div>
+        <div className="flex border border-[#d0d0d0] overflow-hidden w-fit">
+          <button
+            type="button"
+            onClick={() => setExactMatch(false)}
+            className={`px-4 py-2 text-[10px] font-bold tracking-widest transition-colors ${!exactMatch ? 'bg-[#5a5a5a] text-white' : 'bg-white text-[#7a7a7a] hover:bg-[#f0f0f0]'}`}
+          >
+            部分一致
+          </button>
+          <button
+            type="button"
+            onClick={() => setExactMatch(true)}
+            className={`px-4 py-2 text-[10px] font-bold tracking-widest transition-colors border-l border-[#d0d0d0] ${exactMatch ? 'bg-[#5a5a5a] text-white' : 'bg-white text-[#7a7a7a] hover:bg-[#f0f0f0]'}`}
+          >
+            完全一致
           </button>
         </div>
       </div>

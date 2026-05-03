@@ -14,6 +14,12 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long> {
     Page<Purchase> findAllByOrderByPurchasedAtDesc(Pageable pageable);
     Page<Purchase> findByMemberOrderByPurchasedAtDesc(Member member, Pageable pageable);
 
+    // 名前検索（完全一致）
+    Page<Purchase> findByMemberNameOrderByPurchasedAtDesc(String name, Pageable pageable);
+
+    // 名前検索（部分一致）
+    Page<Purchase> findByMemberNameContainingOrderByPurchasedAtDesc(String name, Pageable pageable);
+
     // 決済取り消し可否チェック用（最新の完了済み決済を取得）
     Optional<Purchase> findTopByMemberAndStatusOrderByPurchasedAtDesc(Member member, Purchase.Status status);
 }
