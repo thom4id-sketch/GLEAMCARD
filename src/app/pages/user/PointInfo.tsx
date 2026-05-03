@@ -20,7 +20,7 @@ export const PointInfo = () => {
             <h3 className="text-[11px] font-bold text-[#5a5a5a] tracking-widest uppercase">Point Rules</h3>
           </div>
           <ul className="text-xs text-[#7a7a7a] space-y-4 list-disc pl-4 leading-relaxed">
-            <li>お買い上げ金額と現在の会員ランクの付与率に応じてポイントが貯��ります。</li>
+            <li>お買い上げ金額と現在の会員ランクの付与率に応じてポイントが貯まります。</li>
             <li>商品ご購入時に、店舗スタッフがポイントの付与処理を行います。</li>
             <li><strong className="text-[#4a4a4a]">ポイントが付与されるのはご購入の3日後（72時間後）</strong>となります。</li>
             <li>貯まったポイントは、次回以降のお買い物で「1ポイント＝1円」としてご利用いただけます。</li>

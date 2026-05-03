@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Scan, Calculator, UserCheck, ChevronRight, CheckCircle, Info } from 'lucide-react';
+import liff from '@line/liff';
 import { api } from '../../lib/api';
 
 interface MemberScanDto {
@@ -42,12 +43,11 @@ export const AdminScan = () => {
     ? Math.floor(parsedAmount * targetMember.pointRate)
     : 0;
 
-  const handleScan = async () => {
-    if (!scannedNo.trim()) return;
+  const fetchMember = async (no: string) => {
     setScanLoading(true);
     setScanError('');
     try {
-      const member = await api.get<MemberScanDto>(`/api/admin/members/${scannedNo.trim()}`);
+      const member = await api.get<MemberScanDto>(`/api/admin/members/${no.trim()}`);
       setTargetMember(member);
       setStep(2);
       setAmount('');
@@ -58,6 +58,24 @@ export const AdminScan = () => {
     } finally {
       setScanLoading(false);
     }
+  };
+
+  const handleQrScan = async () => {
+    setScanError('');
+    try {
+      const result = await liff.scanCodeV2();
+      if (result.value) {
+        setScannedNo(result.value);
+        await fetchMember(result.value);
+      }
+    } catch (e) {
+      setScanError('QRの読み取りに失敗しました');
+    }
+  };
+
+  const handleScan = async () => {
+    if (!scannedNo.trim()) return;
+    await fetchMember(scannedNo);
   };
 
   const handlePayment = async (e: React.FormEvent) => {
@@ -117,14 +135,20 @@ export const AdminScan = () => {
       <div className="p-5 flex-1 overflow-y-auto">
         {step === 1 && (
           <div className="flex flex-col items-center justify-center h-full space-y-8">
-            <div className="w-64 h-64 bg-white border border-[#d0d0d0] flex flex-col items-center justify-center shadow-sm relative">
+            <button
+              onClick={handleQrScan}
+              disabled={scanLoading}
+              className="w-64 h-64 bg-white border border-[#d0d0d0] flex flex-col items-center justify-center shadow-sm relative active:bg-[#f8f9fa] transition disabled:opacity-50"
+            >
               <div className="absolute w-8 h-8 border-t border-l border-[#5a5a5a] top-4 left-4"></div>
               <div className="absolute w-8 h-8 border-t border-r border-[#5a5a5a] top-4 right-4"></div>
               <div className="absolute w-8 h-8 border-b border-l border-[#5a5a5a] bottom-4 left-4"></div>
               <div className="absolute w-8 h-8 border-b border-r border-[#5a5a5a] bottom-4 right-4"></div>
-              <Scan className="w-16 h-16 text-[#c0c0c0] mb-4 stroke-1" />
-              <p className="text-[#7a7a7a] font-bold text-xs tracking-widest">カメラでQRを読み取る</p>
-            </div>
+              <Scan className="w-16 h-16 text-[#5a5a5a] mb-4 stroke-1" />
+              <p className="text-[#5a5a5a] font-bold text-xs tracking-widest">
+                {scanLoading ? '読み取り中...' : 'タップしてQRを読み取る'}
+              </p>
+            </button>
 
             <div className="w-full bg-white p-5 border border-[#d0d0d0] shadow-sm">
               <p className="text-[11px] text-[#7a7a7a] mb-3 font-bold tracking-widest">会員番号を入力</p>

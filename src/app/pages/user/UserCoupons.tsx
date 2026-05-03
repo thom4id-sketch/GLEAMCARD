@@ -4,11 +4,14 @@ import { Link } from 'react-router';
 import { Ticket, Users, Copy, Check } from 'lucide-react';
 
 export const UserCoupons = () => {
-  const { coupons, issueFriendLink } = useStore();
+  const { coupons, issueFriendLink, refresh } = useStore();
   const [activeTab, setActiveTab] = useState<'my' | 'invite'>('my');
   const [inviteUrl, setInviteUrl] = useState('');
   const [inviteLoading, setInviteLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  // ページ表示時に最新クーポン状態を取得
+  useEffect(() => { refresh(); }, []);
 
   // 招待タブを開いたとき（初回のみ）リンクを取得
   useEffect(() => {

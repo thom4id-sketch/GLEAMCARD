@@ -3,19 +3,28 @@ import { Send, CheckCircle, Ticket } from 'lucide-react';
 import { addDays, format } from 'date-fns';
 import { api } from '../../lib/api';
 
+type DiscountType = 'PERCENT' | 'AMOUNT';
+
 export const AdminCoupon = () => {
   const [name, setName] = useState('');
   const [hasExpiry, setHasExpiry] = useState(true);
   const [expiresAt, setExpiresAt] = useState(format(addDays(new Date(), 30), 'yyyy-MM-dd'));
-  const [discountPercent, setDiscountPercent] = useState<number | ''>(10);
+  const [discountType, setDiscountType] = useState<DiscountType>('PERCENT');
+  const [discountValue, setDiscountValue] = useState<number | ''>(10);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [distributedCount, setDistributedCount] = useState(0);
 
+  const previewDesc = typeof discountValue === 'number'
+    ? discountType === 'PERCENT'
+      ? `お会計から${discountValue}%OFF`
+      : `お会計から${discountValue.toLocaleString()}円引き`
+    : '—';
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || typeof discountPercent !== 'number') return;
+    if (!name.trim() || typeof discountValue !== 'number') return;
     if (hasExpiry && !expiresAt) return;
 
     setLoading(true);
@@ -23,8 +32,8 @@ export const AdminCoupon = () => {
     try {
       const res = await api.post<{ distributed: number }>('/api/admin/coupons/distribute', {
         name: name.trim(),
-        discountType: 'PERCENT',
-        discountValue: discountPercent,
+        discountType,
+        discountValue,
         expiresAt: hasExpiry ? expiresAt : undefined,
       });
 
@@ -32,7 +41,8 @@ export const AdminCoupon = () => {
       setName('');
       setExpiresAt(format(addDays(new Date(), 30), 'yyyy-MM-dd'));
       setHasExpiry(true);
-      setDiscountPercent(10);
+      setDiscountType('PERCENT');
+      setDiscountValue(10);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 4000);
     } catch (err) {
@@ -42,7 +52,7 @@ export const AdminCoupon = () => {
     }
   };
 
-  const isFormValid = name.trim() && typeof discountPercent === 'number' && (!hasExpiry || expiresAt);
+  const isFormValid = name.trim() && typeof discountValue === 'number' && discountValue > 0 && (!hasExpiry || expiresAt);
 
   return (
     <div className="p-5 h-full flex flex-col overflow-y-auto bg-[#f8f9fa] font-sans">
@@ -75,53 +85,75 @@ export const AdminCoupon = () => {
             value={name}
             onChange={e => setName(e.target.value)}
             className="w-full border border-[#d0d0d0] bg-white px-3 py-3 text-sm focus:outline-none focus:border-[#5a5a5a] text-[#4a4a4a] transition-colors"
-            placeholder="例: 春の特別10%OFFクーポン"
+            placeholder="例: 春の特別クーポン"
           />
         </div>
 
-        <div className="flex space-x-4">
-          <div className="flex-1">
-            <div className="flex justify-between items-center mb-2">
-              <label className="block text-[11px] font-bold text-[#7a7a7a] tracking-widest">
-                使用期限 <span className="text-red-500">*</span>
-              </label>
-              <label className="flex items-center space-x-1 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={!hasExpiry}
-                  onChange={e => setHasExpiry(!e.target.checked)}
-                  className="accent-[#5a5a5a]"
-                />
-                <span className="text-[10px] text-[#7a7a7a] tracking-widest">無期限</span>
-              </label>
+        {/* 割引タイプ + 値 */}
+        <div>
+          <label className="block text-[11px] font-bold text-[#7a7a7a] tracking-widest mb-2">
+            割引内容 <span className="text-red-500">*</span>
+          </label>
+          <div className="flex space-x-2">
+            {/* タイプ切り替え */}
+            <div className="flex border border-[#d0d0d0] overflow-hidden">
+              <button
+                type="button"
+                onClick={() => { setDiscountType('PERCENT'); setDiscountValue(10); }}
+                className={`px-4 py-3 text-xs font-bold tracking-widest transition-colors ${discountType === 'PERCENT' ? 'bg-[#5a5a5a] text-white' : 'bg-white text-[#7a7a7a] hover:bg-[#f0f0f0]'}`}
+              >
+                ％
+              </button>
+              <button
+                type="button"
+                onClick={() => { setDiscountType('AMOUNT'); setDiscountValue(1000); }}
+                className={`px-4 py-3 text-xs font-bold tracking-widest transition-colors border-l border-[#d0d0d0] ${discountType === 'AMOUNT' ? 'bg-[#5a5a5a] text-white' : 'bg-white text-[#7a7a7a] hover:bg-[#f0f0f0]'}`}
+              >
+                円
+              </button>
             </div>
-            <input
-              type="date"
-              required={hasExpiry}
-              disabled={!hasExpiry}
-              value={expiresAt}
-              onChange={e => setExpiresAt(e.target.value)}
-              className="w-full border border-[#d0d0d0] bg-white px-3 py-3 text-sm focus:outline-none focus:border-[#5a5a5a] text-[#4a4a4a] transition-colors font-mono tracking-widest disabled:bg-[#f0f0f0] disabled:text-[#a0a0a0]"
-            />
-          </div>
-
-          <div className="w-24">
-            <label className="block text-[11px] font-bold text-[#7a7a7a] tracking-widest mb-2">
-              割引率 (%) <span className="text-red-500">*</span>
-            </label>
-            <div className="relative">
+            {/* 値入力 */}
+            <div className="relative flex-1">
               <input
                 type="number"
                 required
                 min="1"
-                max="100"
-                value={discountPercent}
-                onChange={e => setDiscountPercent(e.target.value ? Number(e.target.value) : '')}
-                className="w-full border border-[#d0d0d0] bg-white pl-3 pr-6 py-3 text-right text-sm focus:outline-none focus:border-[#5a5a5a] text-[#4a4a4a] transition-colors font-mono"
+                max={discountType === 'PERCENT' ? 100 : undefined}
+                value={discountValue}
+                onChange={e => setDiscountValue(e.target.value ? Number(e.target.value) : '')}
+                className="w-full border border-[#d0d0d0] bg-white pl-3 pr-8 py-3 text-right text-sm focus:outline-none focus:border-[#5a5a5a] text-[#4a4a4a] font-mono"
               />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7a7a7a] text-[11px] tracking-widest">%</span>
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7a7a7a] text-[11px] tracking-widest">
+                {discountType === 'PERCENT' ? '%' : '円'}
+              </span>
             </div>
           </div>
+        </div>
+
+        {/* 使用期限 */}
+        <div>
+          <div className="flex justify-between items-center mb-2">
+            <label className="block text-[11px] font-bold text-[#7a7a7a] tracking-widest">
+              使用期限 <span className="text-red-500">*</span>
+            </label>
+            <label className="flex items-center space-x-1 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={!hasExpiry}
+                onChange={e => setHasExpiry(!e.target.checked)}
+                className="accent-[#5a5a5a]"
+              />
+              <span className="text-[10px] text-[#7a7a7a] tracking-widest">無期限</span>
+            </label>
+          </div>
+          <input
+            type="date"
+            required={hasExpiry}
+            disabled={!hasExpiry}
+            value={expiresAt}
+            onChange={e => setExpiresAt(e.target.value)}
+            className="w-full border border-[#d0d0d0] bg-white px-3 py-3 text-sm focus:outline-none focus:border-[#5a5a5a] text-[#4a4a4a] font-mono tracking-widest disabled:bg-[#f0f0f0] disabled:text-[#a0a0a0]"
+          />
         </div>
 
         {/* プレビュー */}
@@ -137,7 +169,7 @@ export const AdminCoupon = () => {
             <div className="p-5 flex-1 border-l border-dashed border-[#7a7a7a] relative">
               <div className="text-[10px] tracking-widest text-[#7a7a7a] font-bold mb-2 uppercase">Distribution</div>
               <h3 className="text-sm font-bold text-[#4a4a4a] mb-2 tracking-wide leading-tight">{name || 'クーポン名'}</h3>
-              <p className="text-lg font-serif font-bold text-[#5a5a5a]">お会計から{discountPercent || 0}%OFF</p>
+              <p className="text-lg font-serif font-bold text-[#5a5a5a]">{previewDesc}</p>
               {hasExpiry ? (
                 <p className="text-[9px] text-[#a0a0a0] font-mono tracking-widest mt-3">
                   EXP: {expiresAt ? format(new Date(expiresAt), 'yyyy/MM/dd') : '未設定'}
