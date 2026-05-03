@@ -25,6 +25,9 @@ public class Member {
     @Column(nullable = false, length = 100)
     private String name;
 
+    @Column(name = "name_kana", nullable = false, length = 100)
+    private String nameKana;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @Builder.Default

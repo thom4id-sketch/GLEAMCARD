@@ -37,7 +37,9 @@ public class AuthController {
         AuthResponse response = authService.register(
             request.lineAccessToken(),
             request.liffId(),
-            request.invitationId()
+            request.invitationId(),
+            request.name(),
+            request.nameKana()
         );
         return ResponseEntity.ok(response);
     }

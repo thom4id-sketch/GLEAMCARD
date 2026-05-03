@@ -36,11 +36,6 @@ public class AuthService {
 
         return memberRepository.findByLineUserId(userInfo.userId())
             .map(member -> {
-                // LINEの表示名が変わっていれば同期
-                if (!member.getName().equals(userInfo.displayName())) {
-                    member.setName(userInfo.displayName());
-                    memberRepository.save(member);
-                }
                 String token = jwtTokenProvider.generateToken(member.getId(), member.getLineUserId(), isAdmin);
                 return new AuthResponse(token, isAdmin, false, MemberDto.from(member));
             })
@@ -53,7 +48,8 @@ public class AuthService {
      * - 新規登録クーポン付与
      * - 友達招待経由の場合：招待クーポン付与 + FriendInvitation更新
      */
-    public AuthResponse register(String lineAccessToken, String liffId, Long invitationId) {
+    public AuthResponse register(String lineAccessToken, String liffId, Long invitationId,
+                                 String name, String nameKana) {
         LineTokenVerifier.LineUserInfo userInfo = lineTokenVerifier.verify(lineAccessToken);
         boolean isAdmin = lineTokenVerifier.isAdminLiff(liffId);
 
@@ -65,7 +61,8 @@ public class AuthService {
         Member member = memberRepository.save(Member.builder()
             .lineUserId(userInfo.userId())
             .memberNo(String.valueOf(memberRepository.findNextMemberNo()))
-            .name(userInfo.displayName())
+            .name(name)
+            .nameKana(nameKana)
             .rank(Member.Rank.REGULAR)
             .points(0)
             .annualPurchaseAmount(0)
