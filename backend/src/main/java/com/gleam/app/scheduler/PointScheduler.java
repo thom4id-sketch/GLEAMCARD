@@ -55,11 +55,11 @@ public class PointScheduler {
         }
     }
 
-    /** 毎日00:05：ポイント失効チェック（最終購入から1年経過） */
+    /** 毎日00:05：ポイント失効チェック（最終購入から3年経過） */
     @Scheduled(cron = "0 5 0 * * *")
     @Transactional
     public void checkPointExpiry() {
-        OffsetDateTime oneYearAgo = OffsetDateTime.now().minusYears(1);
+        OffsetDateTime oneYearAgo = OffsetDateTime.now().minusYears(3);
         List<Member> expired = memberRepository.findMembersWithExpiredPoints(oneYearAgo);
 
         for (Member member : expired) {
