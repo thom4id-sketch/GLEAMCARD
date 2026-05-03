@@ -59,6 +59,33 @@ public class PostService {
         return PostDto.from(post);
     }
 
+    public PostDto updatePost(Long postId, String title, String linkUrl, MultipartFile image) {
+        Post post = postRepository.findById(postId)
+            .orElseThrow(() -> new IllegalArgumentException("Post not found: " + postId));
+
+        post.setTitle(title);
+        post.setLinkUrl(linkUrl);
+
+        if (image != null && !image.isEmpty()) {
+            validateImage(image);
+            try {
+                post.setImageData(Base64.getEncoder().encodeToString(image.getBytes()));
+                post.setImageContentType(image.getContentType());
+            } catch (IOException e) {
+                throw new RuntimeException("画像の読み込みに失敗しました", e);
+            }
+        }
+
+        return PostDto.from(postRepository.save(post));
+    }
+
+    public void deletePost(Long postId) {
+        if (!postRepository.existsById(postId)) {
+            throw new IllegalArgumentException("Post not found: " + postId);
+        }
+        postRepository.deleteById(postId);
+    }
+
     private void validateImage(MultipartFile image) {
         if (image == null || image.isEmpty()) {
             throw new IllegalArgumentException("画像ファイルが必要です");

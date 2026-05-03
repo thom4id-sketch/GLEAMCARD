@@ -33,6 +33,23 @@ public class AdminPostAndCouponController {
         return ResponseEntity.ok(postService.createPost(memberId, title, linkUrl, image));
     }
 
+    /** PUT /api/admin/posts/{id} — ブログ編集（タイトル・URL・画像を更新） */
+    @PutMapping("/posts/{id}")
+    public ResponseEntity<PostDto> updatePost(
+            @PathVariable Long id,
+            @RequestParam String title,
+            @RequestParam(required = false) String linkUrl,
+            @RequestParam(name = "image", required = false) MultipartFile image) {
+        return ResponseEntity.ok(postService.updatePost(id, title, linkUrl, image));
+    }
+
+    /** DELETE /api/admin/posts/{id} — ブログ削除 */
+    @DeleteMapping("/posts/{id}")
+    public ResponseEntity<Void> deletePost(@PathVariable Long id) {
+        postService.deletePost(id);
+        return ResponseEntity.noContent().build();
+    }
+
     /** POST /api/admin/coupons/distribute — 全会員にクーポンを一括配布 */
     @PostMapping("/coupons/distribute")
     public ResponseEntity<Map<String, Integer>> distributeCoupon(
