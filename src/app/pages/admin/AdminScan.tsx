@@ -1,7 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Scan, Calculator, UserCheck, CheckCircle, Info } from 'lucide-react';
 import liff from '@line/liff';
 import { api } from '../../lib/api';
+
+interface StoreDto {
+  id: number;
+  name: string;
+}
 
 interface MemberScanDto {
   id: number;
@@ -33,10 +38,16 @@ export const AdminScan = () => {
   const [scanLoading, setScanLoading] = useState(false);
   const [scanError, setScanError] = useState('');
 
+  const [stores, setStores] = useState<StoreDto[]>([]);
+  const [selectedStore, setSelectedStore] = useState('');
   const [amount, setAmount] = useState('');
   const [pointsUsed, setPointsUsed] = useState('');
   const [selectedCoupon, setSelectedCoupon] = useState('');
   const [submitLoading, setSubmitLoading] = useState(false);
+
+  useEffect(() => {
+    api.get<StoreDto[]>('/api/admin/stores').then(setStores).catch(() => {});
+  }, []);
 
   const parsedAmount = parseInt(amount, 10) || 0;
   const grantedPoints = targetMember
@@ -53,6 +64,7 @@ export const AdminScan = () => {
       setAmount('');
       setPointsUsed('');
       setSelectedCoupon('');
+      setSelectedStore(stores.length === 1 ? String(stores[0].id) : '');
     } catch (e) {
       setScanError(e instanceof Error ? e.message : '会員情報の取得に失敗しました');
     } finally {
@@ -89,6 +101,10 @@ export const AdminScan = () => {
       alert('正しい金額を入力してください');
       return;
     }
+    if (!selectedStore) {
+      alert('店舗を選択してください');
+      return;
+    }
     if (numPoints > targetMember.points) {
       alert('利用可能ポイントを超えています');
       return;
@@ -98,7 +114,7 @@ export const AdminScan = () => {
     try {
       const res = await api.post<ProcessPaymentResponse>('/api/admin/payments', {
         memberNo: targetMember.memberNo,
-        storeId: 1,
+        storeId: Number(selectedStore),
         amount: numAmount,
         pointsUsed: numPoints,
         couponId: selectedCoupon ? Number(selectedCoupon) : undefined,
@@ -194,6 +210,21 @@ export const AdminScan = () => {
 
             <div className="bg-white p-5 border border-[#d0d0d0] shadow-sm space-y-6">
               <div>
+                <label className="block text-[11px] tracking-widest font-bold text-[#7a7a7a] mb-2">店舗</label>
+                <select
+                  value={selectedStore}
+                  onChange={e => setSelectedStore(e.target.value)}
+                  required
+                  className="w-full border border-[#d0d0d0] bg-[#f8f9fa] px-3 py-3 text-sm focus:outline-none focus:border-[#5a5a5a] text-[#4a4a4a]"
+                >
+                  <option value="">選択してください</option>
+                  {stores.map(s => (
+                    <option key={s.id} value={String(s.id)}>{s.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
                 <label className="block text-[11px] tracking-widest font-bold text-[#7a7a7a] mb-2">購入金額（税込）</label>
                 <div className="relative">
                   <input
@@ -263,7 +294,7 @@ export const AdminScan = () => {
             <div className="pt-2 flex space-x-3">
               <button
                 type="button"
-                onClick={() => { setStep(1); setTargetMember(null); setScannedNo(''); }}
+                onClick={() => { setStep(1); setTargetMember(null); setScannedNo(''); setSelectedStore(''); }}
                 className="flex-1 py-4 bg-white border border-[#a0a0a0] text-[#7a7a7a] text-xs tracking-widest font-bold hover:bg-[#f8f9fa] transition"
               >
                 キャンセル
