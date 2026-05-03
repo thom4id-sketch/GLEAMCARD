@@ -48,12 +48,15 @@ export const api = {
       body: body != null ? JSON.stringify(body) : undefined,
     }),
 
-  postForm: <T>(path: string, form: FormData) =>
-    request<T>(path, { method: 'POST', body: form }),
+  postForm: <T>(path: string, form: FormData, method: 'POST' | 'PUT' = 'POST') =>
+    request<T>(path, { method, body: form }),
 
   put: <T>(path: string, body?: unknown) =>
     request<T>(path, {
       method: 'PUT',
       body: body != null ? JSON.stringify(body) : undefined,
     }),
+
+  delete: <T>(path: string) =>
+    request<T>(path, { method: 'DELETE' }),
 };
