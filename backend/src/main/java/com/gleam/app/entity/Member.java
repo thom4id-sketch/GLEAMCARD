@@ -1,0 +1,81 @@
+package com.gleam.app.entity;
+
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+
+@Entity
+@Table(name = "members")
+@Getter @Setter @Builder
+@NoArgsConstructor @AllArgsConstructor
+public class Member {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "line_user_id", unique = true, nullable = false, length = 50)
+    private String lineUserId;
+
+    @Column(name = "member_no", unique = true, nullable = false, length = 20)
+    private String memberNo;
+
+    @Column(nullable = false, length = 100)
+    private String name;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private Rank rank = Rank.REGULAR;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer points = 0;
+
+    @Column(name = "annual_purchase_amount", nullable = false)
+    @Builder.Default
+    private Integer annualPurchaseAmount = 0;
+
+    @Column(name = "rank_expires_at")
+    private LocalDate rankExpiresAt;
+
+    @Column(name = "last_purchase_at")
+    private OffsetDateTime lastPurchaseAt;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private OffsetDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = OffsetDateTime.now();
+        updatedAt = OffsetDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = OffsetDateTime.now();
+    }
+
+    public enum Rank {
+        REGULAR, GOLD, PLATINUM;
+
+        public double getPointRate() {
+            return switch (this) {
+                case PLATINUM -> 0.10;
+                case GOLD     -> 0.08;
+                default       -> 0.05;
+            };
+        }
+
+        public static Rank fromAnnualPurchase(int amount) {
+            if (amount >= 100_000) return PLATINUM;
+            if (amount >= 50_000)  return GOLD;
+            return REGULAR;
+        }
+    }
+}

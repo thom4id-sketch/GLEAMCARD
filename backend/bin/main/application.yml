@@ -1,0 +1,32 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:gleam_db}
+    username: ${DB_USERNAME:gleam}
+    password: ${DB_PASSWORD:gleam}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+server:
+  port: 8080
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:local-dev-secret-change-this-in-production-must-be-32-chars}
+    expiration-ms: 86400000
+  line:
+    liff-id-user: ${LIFF_ID_USER}
+    liff-id-admin: ${LIFF_ID_ADMIN}
+  upload:
+    dir: ${UPLOAD_DIR:uploads}

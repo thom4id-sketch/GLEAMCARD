@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs grep:*)",
+      "Bash(wc -l /c/Users/s yoshida/Downloads/GleamMiniapp/src/app/pages/user/*.tsx /c/Users/s yoshida/Downloads/GleamMiniapp/src/app/pages/admin/*.tsx)",
+      "Bash(npm install:*)"
+    ]
+  }
+}
