@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Scan, Calculator, UserCheck, ChevronRight, CheckCircle, Info } from 'lucide-react';
+import { Scan, Calculator, UserCheck, CheckCircle, Info } from 'lucide-react';
 import liff from '@line/liff';
 import { api } from '../../lib/api';
 
@@ -155,21 +155,21 @@ export const AdminScan = () => {
               {scanError && (
                 <p className="text-xs text-red-500 mb-3 tracking-wide">{scanError}</p>
               )}
-              <div className="flex space-x-0 border border-[#d0d0d0] bg-[#f8f9fa] p-1">
+              <div className="flex border border-[#d0d0d0] bg-[#f8f9fa] p-1">
                 <input
                   type="text"
                   value={scannedNo}
                   onChange={e => setScannedNo(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleScan()}
                   placeholder="例: 10001"
-                  className="flex-1 bg-transparent px-3 py-3 text-sm font-mono tracking-widest focus:outline-none placeholder:text-[#c0c0c0] text-[#4a4a4a]"
+                  className="w-full min-w-0 bg-transparent px-3 py-3 text-sm font-mono tracking-widest focus:outline-none placeholder:text-[#c0c0c0] text-[#4a4a4a]"
                 />
                 <button
                   onClick={handleScan}
                   disabled={scanLoading}
-                  className="bg-[#5a5a5a] text-white px-6 py-3 text-xs tracking-widest font-bold flex items-center hover:bg-[#4a4a4a] transition disabled:opacity-50"
+                  className="flex-shrink-0 bg-[#5a5a5a] text-white px-5 py-3 text-xs tracking-widest font-bold hover:bg-[#4a4a4a] transition disabled:opacity-50"
                 >
-                  {scanLoading ? '...' : <><span>確認</span><ChevronRight className="w-4 h-4 ml-1 stroke-1" /></>}
+                  {scanLoading ? '...' : '確認'}
                 </button>
               </div>
             </div>

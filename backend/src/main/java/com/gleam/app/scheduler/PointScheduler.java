@@ -70,7 +70,7 @@ public class PointScheduler {
                 .member(member)
                 .amount(expiredPoints)
                 .transactionType(PointHistory.TransactionType.EXPIRE)
-                .description("ポイント失効（最終購入から1年経過）")
+                .description("ポイント失効（最終購入から3年経過）")
                 .build());
 
             member.setPoints(0);

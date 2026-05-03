@@ -55,7 +55,7 @@ export const AdminCoupon = () => {
   const isFormValid = name.trim() && typeof discountValue === 'number' && discountValue > 0 && (!hasExpiry || expiresAt);
 
   return (
-    <div className="p-5 h-full flex flex-col overflow-y-auto bg-[#f8f9fa] font-sans">
+    <div className="p-5 h-full flex flex-col overflow-y-auto overflow-x-hidden bg-[#f8f9fa] font-sans">
       <h2 className="text-xs font-bold text-[#5a5a5a] border-b border-[#d0d0d0] pb-3 mb-6 tracking-widest flex items-center">
         <Ticket className="w-4 h-4 mr-2 stroke-1" />
         クーポン一斉配布
@@ -147,12 +147,14 @@ export const AdminCoupon = () => {
             </label>
           </div>
           <input
-            type="date"
+            type="text"
+            inputMode="numeric"
+            placeholder="例: 2026-06-02"
             required={hasExpiry}
             disabled={!hasExpiry}
             value={expiresAt}
             onChange={e => setExpiresAt(e.target.value)}
-            className="w-full border border-[#d0d0d0] bg-white px-3 py-3 text-sm focus:outline-none focus:border-[#5a5a5a] text-[#4a4a4a] font-mono tracking-widest disabled:bg-[#f0f0f0] disabled:text-[#a0a0a0]"
+            className="w-full border border-[#d0d0d0] bg-white px-3 py-3 text-sm focus:outline-none focus:border-[#5a5a5a] text-[#4a4a4a] font-mono disabled:bg-[#f0f0f0] disabled:text-[#a0a0a0]"
           />
         </div>
 
