@@ -68,9 +68,6 @@ public class AuthService {
             .annualPurchaseAmount(0)
             .build());
 
-        // 新規登録クーポン付与
-        couponService.issueWelcomeCoupon(member);
-
         // 友達招待経由の場合
         if (invitationId != null) {
             friendInvitationRepository.findById(invitationId).ifPresent(invitation -> {
