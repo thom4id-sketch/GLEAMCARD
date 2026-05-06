@@ -32,7 +32,11 @@ public class AppProperties {
 
     @Getter @Setter
     public static class Cors {
-        private java.util.List<String> allowedOrigins =
-            java.util.List.of("http://localhost:5173", "http://localhost:3000");
+        private java.util.List<String> allowedOrigins = java.util.List.of(
+            "http://localhost:5173",
+            "http://localhost:3000",
+            "https://*.vercel.app",
+            "https://liff.line.me"
+        );
     }
 }
