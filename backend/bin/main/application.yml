@@ -30,3 +30,7 @@ app:
     liff-id-admin: ${LIFF_ID_ADMIN}
   upload:
     dir: ${UPLOAD_DIR:uploads}
+  cors:
+    allowed-origins:
+      - http://localhost:5173
+      - http://localhost:3000
