@@ -3,6 +3,7 @@ package com.gleam.app.security;
 import com.gleam.app.config.AppProperties;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -16,7 +17,23 @@ import java.util.Date;
 @Slf4j
 public class JwtTokenProvider {
 
+    private static final String WEAK_DEFAULT_SECRET =
+        "local-dev-secret-change-this-in-production-must-be-32-chars";
+    private static final int MIN_SECRET_LENGTH = 32;
+
     private final AppProperties appProperties;
+
+    @PostConstruct
+    public void validateJwtSecret() {
+        String secret = appProperties.getJwt().getSecret();
+        if (secret == null || secret.length() < MIN_SECRET_LENGTH) {
+            throw new IllegalStateException(
+                "JWT_SECRET must be at least " + MIN_SECRET_LENGTH + " characters");
+        }
+        if (secret.equals(WEAK_DEFAULT_SECRET)) {
+            log.warn("[SECURITY] デフォルトのJWT秘密鍵が使われています。本番環境では JWT_SECRET 環境変数を設定してください。");
+        }
+    }
 
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(
@@ -31,7 +48,7 @@ public class JwtTokenProvider {
             .claim("isAdmin", isAdmin)
             .issuedAt(new Date())
             .expiration(new Date(System.currentTimeMillis() + appProperties.getJwt().getExpirationMs()))
-            .signWith(getSigningKey())
+            .signWith(getSigningKey(), Jwts.SIG.HS256)
             .compact();
     }
 

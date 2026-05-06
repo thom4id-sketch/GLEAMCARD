@@ -11,6 +11,7 @@ public class AppProperties {
     private Jwt jwt = new Jwt();
     private Line line = new Line();
     private Upload upload = new Upload();
+    private Cors cors = new Cors();
 
     @Getter @Setter
     public static class Jwt {
@@ -27,5 +28,11 @@ public class AppProperties {
     @Getter @Setter
     public static class Upload {
         private String dir;
+    }
+
+    @Getter @Setter
+    public static class Cors {
+        private java.util.List<String> allowedOrigins =
+            java.util.List.of("http://localhost:5173", "http://localhost:3000");
     }
 }

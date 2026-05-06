@@ -24,6 +24,13 @@ public class PostService {
     private static final Set<String> ALLOWED_CONTENT_TYPES =
         Set.of("image/jpeg", "image/png", "image/webp");
 
+    // マジックバイト: Content-Type ヘッダーの偽装を検出する
+    private static final byte[] MAGIC_JPEG = {(byte)0xFF, (byte)0xD8, (byte)0xFF};
+    private static final byte[] MAGIC_PNG  = {(byte)0x89, 0x50, 0x4E, 0x47};
+    // WebP = "RIFF" + 4bytes + "WEBP"
+    private static final byte[] MAGIC_WEBP_RIFF = {0x52, 0x49, 0x46, 0x46};
+    private static final byte[] MAGIC_WEBP_MARK = {0x57, 0x45, 0x42, 0x50};
+
     private final PostRepository postRepository;
     private final MemberRepository memberRepository;
 
@@ -94,5 +101,36 @@ public class PostService {
         if (contentType == null || !ALLOWED_CONTENT_TYPES.contains(contentType)) {
             throw new IllegalArgumentException("対応していない画像形式です（JPEG/PNG/WebP）");
         }
+        try {
+            byte[] header = image.getBytes();
+            if (!matchesMagic(header, contentType)) {
+                throw new IllegalArgumentException("ファイルの内容が宣言された形式と一致しません");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("画像の検証に失敗しました", e);
+        }
+    }
+
+    private boolean matchesMagic(byte[] data, String contentType) {
+        return switch (contentType) {
+            case "image/jpeg" -> startsWith(data, MAGIC_JPEG);
+            case "image/png"  -> startsWith(data, MAGIC_PNG);
+            case "image/webp" -> startsWith(data, MAGIC_WEBP_RIFF)
+                                 && data.length >= 12
+                                 && startsWith(data, MAGIC_WEBP_MARK, 8);
+            default -> false;
+        };
+    }
+
+    private static boolean startsWith(byte[] data, byte[] magic) {
+        return startsWith(data, magic, 0);
+    }
+
+    private static boolean startsWith(byte[] data, byte[] magic, int offset) {
+        if (data.length < offset + magic.length) return false;
+        for (int i = 0; i < magic.length; i++) {
+            if (data[offset + i] != magic[i]) return false;
+        }
+        return true;
     }
 }
