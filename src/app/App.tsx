@@ -3,19 +3,14 @@ import { router } from './routes';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { StoreProvider } from './context/StoreContext';
 import { RegisterPage } from './pages/auth/RegisterPage';
+import { LoadingScreen } from './components/LoadingScreen';
 
 /** 認証状態に応じてコンテンツを切り替えるゲート */
 const AuthGate = () => {
   const { status, error } = useAuth();
 
   if (status === 'loading') {
-    return (
-      <div className="min-h-screen max-w-md mx-auto flex items-center justify-center bg-[#f8f9fa]">
-        <div className="text-center">
-          <p className="text-xs text-[#7a7a7a] tracking-widest uppercase animate-pulse">Loading...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   if (status === 'error') {
