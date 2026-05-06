@@ -10,7 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +30,16 @@ public class CouponService {
         Coupon.DiscountType discountType = parseDiscountType(req.discountType());
         String discountDesc = buildDiscountDesc(discountType, req.discountValue());
 
-        List<Member> allMembers = memberRepository.findAll();
+        LocalDate today = LocalDate.now();
+        Set<String> ranks   = (req.targetRanks()   != null && !req.targetRanks().isEmpty())   ? Set.copyOf(req.targetRanks())   : null;
+        Set<String> genders = (req.targetGenders()  != null && !req.targetGenders().isEmpty())  ? Set.copyOf(req.targetGenders())  : null;
+
+        List<Member> allMembers = memberRepository.findAll().stream()
+            .filter(m -> ranks == null || ranks.contains(m.getRank().name()))
+            .filter(m -> genders == null || (m.getGender() != null && genders.contains(m.getGender())))
+            .filter(m -> req.targetAgeMin() == null || (m.getBirthday() != null && calcAge(m.getBirthday(), today) >= req.targetAgeMin()))
+            .filter(m -> req.targetAgeMax() == null || (m.getBirthday() != null && calcAge(m.getBirthday(), today) <= req.targetAgeMax()))
+            .toList();
 
         List<Coupon> coupons = allMembers.stream()
             .map(member -> Coupon.builder()
@@ -78,6 +89,11 @@ public class CouponService {
             .isUsed(false)
             .invitation(invitation)
             .build());
+    }
+
+    private int calcAge(LocalDate birthday, LocalDate today) {
+        return today.getYear() - birthday.getYear()
+            - (today.getDayOfYear() < birthday.getDayOfYear() ? 1 : 0);
     }
 
     private Coupon.DiscountType parseDiscountType(String value) {

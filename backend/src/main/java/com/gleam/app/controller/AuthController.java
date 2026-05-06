@@ -39,7 +39,9 @@ public class AuthController {
             request.liffId(),
             request.invitationId(),
             request.name(),
-            request.nameKana()
+            request.nameKana(),
+            request.birthday(),
+            request.gender()
         );
         return ResponseEntity.ok(response);
     }

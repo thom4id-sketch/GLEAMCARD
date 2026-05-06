@@ -1,0 +1,2 @@
+ALTER TABLE members ADD COLUMN birthday DATE;
+ALTER TABLE members ADD COLUMN gender VARCHAR(20);

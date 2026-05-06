@@ -6,6 +6,8 @@ export const RegisterPage = () => {
   const { completeRegistration } = useAuth();
   const [name, setName] = useState('');
   const [nameKana, setNameKana] = useState('');
+  const [birthday, setBirthday] = useState('');
+  const [gender, setGender] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -24,7 +26,7 @@ export const RegisterPage = () => {
     setLoading(true);
     setError('');
     try {
-      await completeRegistration(name.trim(), nameKana.trim());
+      await completeRegistration(name.trim(), nameKana.trim(), birthday || undefined, gender || undefined);
     } catch (e) {
       setError(e instanceof Error ? e.message : '登録に失敗しました。もう一度お試しください。');
       setLoading(false);
@@ -99,6 +101,38 @@ export const RegisterPage = () => {
               {nameKana && !isHiragana(nameKana) && (
                 <p className="text-[10px] text-red-500 mt-1 tracking-wide">ひらがなで入力してください</p>
               )}
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-bold text-[#7a7a7a] tracking-widest mb-2">
+                生年月日 <span className="text-[#a0a0a0] font-normal">（任意）</span>
+              </label>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={birthday}
+                onChange={e => setBirthday(e.target.value)}
+                placeholder="例: 1990-04-15"
+                className="w-full border border-[#d0d0d0] bg-white px-3 py-3 text-sm focus:outline-none focus:border-[#5a5a5a] text-[#4a4a4a] font-mono transition-colors"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-bold text-[#7a7a7a] tracking-widest mb-2">
+                性別 <span className="text-[#a0a0a0] font-normal">（任意）</span>
+              </label>
+              <div className="flex border border-[#d0d0d0] overflow-hidden">
+                {[{ value: '', label: '未設定' }, { value: 'MALE', label: '男性' }, { value: 'FEMALE', label: '女性' }, { value: 'OTHER', label: 'その他' }].map((opt, i) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setGender(opt.value)}
+                    className={`flex-1 py-3 text-xs font-bold tracking-widest transition-colors ${i > 0 ? 'border-l border-[#d0d0d0]' : ''} ${gender === opt.value ? 'bg-[#5a5a5a] text-white' : 'bg-white text-[#7a7a7a] hover:bg-[#f0f0f0]'}`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 

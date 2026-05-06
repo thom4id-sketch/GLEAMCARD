@@ -29,7 +29,7 @@ interface AuthState {
   isAdmin: boolean;
   error?: string;
   /** 新規登録を完了して JWT を取得する */
-  completeRegistration: (name: string, nameKana: string) => Promise<void>;
+  completeRegistration: (name: string, nameKana: string, birthday?: string, gender?: string) => Promise<void>;
   /** currentUser を最新データで再取得 */
   refreshUser: () => Promise<void>;
 }
@@ -125,7 +125,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     init();
   }, []);
 
-  const completeRegistration = async (name: string, nameKana: string) => {
+  const completeRegistration = async (name: string, nameKana: string, birthday?: string, gender?: string) => {
     // 開発モック時は登録不要
     if (IS_DEV_MOCK) {
       setCurrentUser({ ...MOCK_USER, name });
@@ -141,6 +141,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       invitationId: invitationId ?? undefined,
       name,
       nameKana,
+      birthday: birthday || undefined,
+      gender: gender || undefined,
     });
 
     setToken(res.token!);

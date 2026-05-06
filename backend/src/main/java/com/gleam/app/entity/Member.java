@@ -28,6 +28,12 @@ public class Member {
     @Column(name = "name_kana", nullable = false, length = 100)
     private String nameKana;
 
+    @Column(name = "birthday")
+    private LocalDate birthday;
+
+    @Column(name = "gender", length = 20)
+    private String gender;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @Builder.Default

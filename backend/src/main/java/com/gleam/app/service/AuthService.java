@@ -49,7 +49,8 @@ public class AuthService {
      * - 友達招待経由の場合：招待クーポン付与 + FriendInvitation更新
      */
     public AuthResponse register(String lineAccessToken, String liffId, Long invitationId,
-                                 String name, String nameKana) {
+                                 String name, String nameKana,
+                                 java.time.LocalDate birthday, String gender) {
         LineTokenVerifier.LineUserInfo userInfo = lineTokenVerifier.verify(lineAccessToken);
         boolean isAdmin = lineTokenVerifier.isAdminLiff(liffId);
 
@@ -63,6 +64,8 @@ public class AuthService {
             .memberNo(String.valueOf(memberRepository.findNextMemberNo()))
             .name(name)
             .nameKana(nameKana)
+            .birthday(birthday)
+            .gender(gender)
             .rank(Member.Rank.REGULAR)
             .points(0)
             .annualPurchaseAmount(0)

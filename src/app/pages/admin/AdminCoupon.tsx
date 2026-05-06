@@ -4,6 +4,19 @@ import { addDays, format } from 'date-fns';
 import { api } from '../../lib/api';
 
 type DiscountType = 'PERCENT' | 'AMOUNT';
+type Rank = 'REGULAR' | 'GOLD' | 'PLATINUM';
+type Gender = 'MALE' | 'FEMALE' | 'OTHER';
+
+const ALL_RANKS: { value: Rank; label: string }[] = [
+  { value: 'REGULAR', label: 'レギュラー' },
+  { value: 'GOLD', label: 'ゴールド' },
+  { value: 'PLATINUM', label: 'プラチナ' },
+];
+const ALL_GENDERS: { value: Gender; label: string }[] = [
+  { value: 'MALE', label: '男性' },
+  { value: 'FEMALE', label: '女性' },
+  { value: 'OTHER', label: 'その他' },
+];
 
 export const AdminCoupon = () => {
   const [name, setName] = useState('');
@@ -15,6 +28,17 @@ export const AdminCoupon = () => {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [distributedCount, setDistributedCount] = useState(0);
+
+  // ターゲティング
+  const [targetRanks, setTargetRanks] = useState<Rank[]>([]);
+  const [targetGenders, setTargetGenders] = useState<Gender[]>([]);
+  const [ageMin, setAgeMin] = useState<number | ''>('');
+  const [ageMax, setAgeMax] = useState<number | ''>('');
+
+  const toggleRank = (r: Rank) =>
+    setTargetRanks(prev => prev.includes(r) ? prev.filter(x => x !== r) : [...prev, r]);
+  const toggleGender = (g: Gender) =>
+    setTargetGenders(prev => prev.includes(g) ? prev.filter(x => x !== g) : [...prev, g]);
 
   const previewDesc = typeof discountValue === 'number'
     ? discountType === 'PERCENT'
@@ -35,6 +59,10 @@ export const AdminCoupon = () => {
         discountType,
         discountValue,
         expiresAt: hasExpiry ? expiresAt : undefined,
+        targetRanks: targetRanks.length > 0 ? targetRanks : undefined,
+        targetGenders: targetGenders.length > 0 ? targetGenders : undefined,
+        targetAgeMin: typeof ageMin === 'number' ? ageMin : undefined,
+        targetAgeMax: typeof ageMax === 'number' ? ageMax : undefined,
       });
 
       setDistributedCount(res.distributed);
@@ -43,6 +71,10 @@ export const AdminCoupon = () => {
       setHasExpiry(true);
       setDiscountType('PERCENT');
       setDiscountValue(10);
+      setTargetRanks([]);
+      setTargetGenders([]);
+      setAgeMin('');
+      setAgeMax('');
       setSuccess(true);
       setTimeout(() => setSuccess(false), 4000);
     } catch (err) {
@@ -158,6 +190,76 @@ export const AdminCoupon = () => {
           />
         </div>
 
+        {/* ターゲティング */}
+        <div>
+          <label className="block text-[11px] font-bold text-[#7a7a7a] tracking-widest mb-3">
+            配布対象 <span className="text-[#a0a0a0] font-normal">（未選択の場合は全員対象）</span>
+          </label>
+
+          {/* ランク */}
+          <p className="text-[10px] text-[#7a7a7a] tracking-widest mb-2">会員ランク</p>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {ALL_RANKS.map(r => (
+              <button
+                key={r.value}
+                type="button"
+                onClick={() => toggleRank(r.value)}
+                className={`px-3 py-2 text-[10px] font-bold tracking-widest border transition-colors ${
+                  targetRanks.includes(r.value)
+                    ? 'bg-[#5a5a5a] text-white border-[#5a5a5a]'
+                    : 'bg-white text-[#7a7a7a] border-[#d0d0d0] hover:bg-[#f0f0f0]'
+                }`}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
+
+          {/* 性別 */}
+          <p className="text-[10px] text-[#7a7a7a] tracking-widest mb-2">性別</p>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {ALL_GENDERS.map(g => (
+              <button
+                key={g.value}
+                type="button"
+                onClick={() => toggleGender(g.value)}
+                className={`px-3 py-2 text-[10px] font-bold tracking-widest border transition-colors ${
+                  targetGenders.includes(g.value)
+                    ? 'bg-[#5a5a5a] text-white border-[#5a5a5a]'
+                    : 'bg-white text-[#7a7a7a] border-[#d0d0d0] hover:bg-[#f0f0f0]'
+                }`}
+              >
+                {g.label}
+              </button>
+            ))}
+          </div>
+
+          {/* 年齢 */}
+          <p className="text-[10px] text-[#7a7a7a] tracking-widest mb-2">年齢</p>
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              min="0"
+              max="120"
+              value={ageMin}
+              onChange={e => setAgeMin(e.target.value ? Number(e.target.value) : '')}
+              placeholder="下限"
+              className="w-20 border border-[#d0d0d0] bg-white px-3 py-2 text-sm text-center focus:outline-none focus:border-[#5a5a5a] text-[#4a4a4a] font-mono"
+            />
+            <span className="text-[10px] text-[#7a7a7a] tracking-widest">歳〜</span>
+            <input
+              type="number"
+              min="0"
+              max="120"
+              value={ageMax}
+              onChange={e => setAgeMax(e.target.value ? Number(e.target.value) : '')}
+              placeholder="上限"
+              className="w-20 border border-[#d0d0d0] bg-white px-3 py-2 text-sm text-center focus:outline-none focus:border-[#5a5a5a] text-[#4a4a4a] font-mono"
+            />
+            <span className="text-[10px] text-[#7a7a7a] tracking-widest">歳</span>
+          </div>
+        </div>
+
         {/* プレビュー */}
         <div className="bg-[#f8f9fa] border border-[#d0d0d0] p-4 text-[10px] text-[#7a7a7a] tracking-widest leading-relaxed">
           <p className="font-bold mb-2">プレビュー</p>
@@ -190,7 +292,13 @@ export const AdminCoupon = () => {
             className="w-full bg-[#5a5a5a] text-white py-4 text-xs tracking-widest font-bold flex items-center justify-center space-x-2 hover:bg-[#4a4a4a] transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Send className="w-4 h-4 stroke-1" />
-            <span>{loading ? '配布中...' : '全会員に配布する'}</span>
+            <span>
+              {loading
+                ? '配布中...'
+                : (targetRanks.length || targetGenders.length || typeof ageMin === 'number' || typeof ageMax === 'number')
+                  ? '対象会員に配布する'
+                  : '全会員に配布する'}
+            </span>
           </button>
         </div>
       </form>
