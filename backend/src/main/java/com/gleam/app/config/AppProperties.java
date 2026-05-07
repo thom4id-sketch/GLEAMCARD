@@ -36,7 +36,8 @@ public class AppProperties {
             "http://localhost:5173",
             "http://localhost:3000",
             "https://*.vercel.app",
-            "https://liff.line.me"
+            "https://liff.line.me",
+            "https://miniapp.line.me"
         );
     }
 }

@@ -36,3 +36,4 @@ app:
       - http://localhost:3000
       - https://*.vercel.app
       - https://liff.line.me
+      - https://miniapp.line.me
