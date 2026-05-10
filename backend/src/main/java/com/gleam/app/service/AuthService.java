@@ -30,8 +30,8 @@ public class AuthService {
      * - 登録済み：JWT発行
      * - 未登録  ：isNewMember=true（フロントが /register へ誘導）
      */
-    public AuthResponse lineLogin(String lineAccessToken, String liffId) {
-        LineTokenVerifier.LineUserInfo userInfo = lineTokenVerifier.verify(lineAccessToken);
+    public AuthResponse lineLogin(String lineIdToken, String liffId) {
+        LineTokenVerifier.LineUserInfo userInfo = lineTokenVerifier.verifyIdToken(lineIdToken, liffId);
         boolean isAdmin = lineTokenVerifier.isAdminLiff(liffId);
 
         return memberRepository.findByLineUserId(userInfo.userId())
@@ -48,10 +48,10 @@ public class AuthService {
      * - 新規登録クーポン付与
      * - 友達招待経由の場合：招待クーポン付与 + FriendInvitation更新
      */
-    public AuthResponse register(String lineAccessToken, String liffId, Long invitationId,
+    public AuthResponse register(String lineIdToken, String liffId, Long invitationId,
                                  String name, String nameKana,
                                  java.time.LocalDate birthday, String gender) {
-        LineTokenVerifier.LineUserInfo userInfo = lineTokenVerifier.verify(lineAccessToken);
+        LineTokenVerifier.LineUserInfo userInfo = lineTokenVerifier.verifyIdToken(lineIdToken, liffId);
         boolean isAdmin = lineTokenVerifier.isAdminLiff(liffId);
 
         if (memberRepository.existsByLineUserId(userInfo.userId())) {

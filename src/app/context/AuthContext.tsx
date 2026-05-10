@@ -96,7 +96,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           return;
         }
 
-        // IDトークンがない = profile スコープ未同意 → 同意画面を出すため再ログイン
         const idToken = liff.getIDToken();
         if (!idToken) {
           liff.logout();
@@ -104,14 +103,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           return;
         }
 
-        const accessToken = liff.getAccessToken();
-        if (!accessToken) throw new Error('LIFFアクセストークンを取得できませんでした');
-
-        setLiffAccessToken(accessToken);
+        setLiffAccessToken(idToken);
         setLiffId(targetLiffId);
 
         const res = await api.post<AuthResponse>('/api/auth/line', {
-          lineAccessToken: accessToken,
+          lineIdToken: idToken,
           liffId: targetLiffId,
         });
 
@@ -144,7 +140,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!liffAccessToken || !liffId) throw new Error('認証情報が不足しています');
 
     const res = await api.post<AuthResponse>('/api/auth/register', {
-      lineAccessToken: liffAccessToken,
+      lineIdToken: liffAccessToken,
       liffId,
       invitationId: invitationId ?? undefined,
       name,

@@ -23,7 +23,7 @@ public class AuthController {
      */
     @PostMapping("/line")
     public ResponseEntity<AuthResponse> lineLogin(@Valid @RequestBody LineLoginRequest request) {
-        AuthResponse response = authService.lineLogin(request.lineAccessToken(), request.liffId());
+        AuthResponse response = authService.lineLogin(request.lineIdToken(), request.liffId());
         return ResponseEntity.ok(response);
     }
 
@@ -35,7 +35,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
         AuthResponse response = authService.register(
-            request.lineAccessToken(),
+            request.lineIdToken(),
             request.liffId(),
             request.invitationId(),
             request.name(),
