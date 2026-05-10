@@ -93,7 +93,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         if (!liff.isLoggedIn()) {
           liff.login({ redirectUri: window.location.href });
-          return; // ページ遷移するのでここで停止
+          return;
+        }
+
+        // IDトークンがない = profile スコープ未同意 → 同意画面を出すため再ログイン
+        const idToken = liff.getIDToken();
+        if (!idToken) {
+          liff.logout();
+          liff.login({ redirectUri: window.location.href });
+          return;
         }
 
         const accessToken = liff.getAccessToken();
