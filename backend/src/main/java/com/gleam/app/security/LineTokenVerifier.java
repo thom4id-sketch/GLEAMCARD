@@ -47,7 +47,8 @@ public class LineTokenVerifier {
                 (String) profile.get("displayName")
             );
         } catch (WebClientResponseException e) {
-            log.warn("LINE token verification failed: {}", e.getMessage());
+            log.warn("LINE token verification failed: status={} body={}",
+                e.getStatusCode(), e.getResponseBodyAsString());
             throw new IllegalArgumentException("Invalid LINE access token");
         }
     }
