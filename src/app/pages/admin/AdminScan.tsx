@@ -50,8 +50,8 @@ export const AdminScan = () => {
   }, []);
 
   const parsedAmount = parseInt(amount, 10) || 0;
-  // 税抜き換算（10%）してポイント概算
-  const taxExcluded = Math.floor(parsedAmount / 1.1);
+  // 税抜き換算（10%）— 浮動小数点誤差を避けるため * 10 / 11 の整数演算
+  const taxExcluded = Math.trunc(parsedAmount * 10 / 11);
   const grantedPoints = targetMember
     ? Math.floor(taxExcluded * targetMember.pointRate)
     : 0;
