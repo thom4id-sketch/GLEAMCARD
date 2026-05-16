@@ -50,8 +50,10 @@ export const AdminScan = () => {
   }, []);
 
   const parsedAmount = parseInt(amount, 10) || 0;
+  // 税抜き換算（10%）してポイント概算
+  const taxExcluded = Math.floor(parsedAmount / 1.1);
   const grantedPoints = targetMember
-    ? Math.floor(parsedAmount * targetMember.pointRate)
+    ? Math.floor(taxExcluded * targetMember.pointRate)
     : 0;
 
   const fetchMember = async (no: string) => {
@@ -278,15 +280,21 @@ export const AdminScan = () => {
               )}
 
               {parsedAmount > 0 && (
-                <div className="bg-[#f8f9fa] p-4 border border-[#d0d0d0]">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[11px] font-bold text-[#5a5a5a] tracking-widest flex items-center">
-                      <Info className="w-4 h-4 mr-1 stroke-1" />
-                      付与予定ポイント ({Math.round(targetMember.pointRate * 100)}%)
+                <div className="bg-[#f8f9fa] p-4 border border-[#d0d0d0] space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-[#7a7a7a] tracking-widest flex items-center">
+                      <Info className="w-3.5 h-3.5 mr-1 stroke-1" />
+                      税抜き金額（ポイント基準）
+                    </span>
+                    <span className="text-xs font-mono text-[#7a7a7a]">{taxExcluded.toLocaleString()} 円</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-[#5a5a5a] tracking-widest">
+                      付与予定ポイント（{Math.round(targetMember.pointRate * 100)}%）
                     </span>
                     <span className="text-sm font-bold font-mono text-[#4a4a4a]">+{grantedPoints} pt</span>
                   </div>
-                  <p className="text-[10px] text-[#7a7a7a] ml-5 tracking-widest">※購入の3日後に自動付与されます。</p>
+                  <p className="text-[10px] text-[#7a7a7a] tracking-widest">※クーポン適用後の税抜き金額が基準。購入の3日後に自動付与されます。</p>
                 </div>
               )}
             </div>

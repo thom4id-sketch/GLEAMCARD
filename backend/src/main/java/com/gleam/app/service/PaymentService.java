@@ -63,16 +63,19 @@ public class PaymentService {
             }
         }
 
-        // --- 付与ポイント計算（クーポン割引後の金額を基準にする）---
-        int effectiveAmount = req.amount();
+        // --- 付与ポイント計算（税込み→クーポン割引→税抜き換算の順で算出）---
+        // req.amount() は税込み金額
+        int discountedTaxIncluded = req.amount();
         if (coupon != null) {
             if (coupon.getDiscountType() == Coupon.DiscountType.PERCENT) {
-                effectiveAmount = (int) Math.floor(req.amount() * (100 - coupon.getDiscountValue()) / 100.0);
+                discountedTaxIncluded = (int) Math.floor(req.amount() * (100 - coupon.getDiscountValue()) / 100.0);
             } else {
-                effectiveAmount = Math.max(0, req.amount() - coupon.getDiscountValue());
+                discountedTaxIncluded = Math.max(0, req.amount() - coupon.getDiscountValue());
             }
         }
-        int pointsToGrant = (int) Math.floor(effectiveAmount * member.getRank().getPointRate());
+        // 税率10%で税抜き換算してポイント計算
+        int taxExcludedAmount = (int) Math.floor(discountedTaxIncluded / 1.1);
+        int pointsToGrant = (int) Math.floor(taxExcludedAmount * member.getRank().getPointRate());
 
         // --- Purchase 登録 ---
         Purchase purchase = purchaseRepository.save(Purchase.builder()
