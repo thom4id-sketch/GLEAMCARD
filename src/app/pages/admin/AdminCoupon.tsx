@@ -112,13 +112,16 @@ export const AdminCoupon = () => {
   });
 
   const saveDraft = () => {
+    const existing = drafts.find(d => d.name === name);
     const draft: CouponDraft = {
-      id: Date.now().toString(),
+      id: existing?.id ?? Date.now().toString(),
       savedAt: new Date().toISOString(),
       name, discountType, discountValue, hasExpiry, expiresAt,
       usageCondition, targetRanks, targetGenders, ageMin, ageMax, targetHasPurchase,
     };
-    const next = [draft, ...drafts];
+    const next = existing
+      ? drafts.map(d => d.id === existing.id ? draft : d)
+      : [draft, ...drafts];
     setDrafts(next);
     localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(next));
   };
