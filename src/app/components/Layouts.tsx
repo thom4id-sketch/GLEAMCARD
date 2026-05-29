@@ -24,9 +24,9 @@ export const AdminLayout = () => {
         <Outlet />
       </main>
       <nav className="fixed bottom-0 inset-x-0 max-w-md mx-auto h-[60px] bg-white border-t border-[#d0d0d0] flex justify-around items-center shadow-[0_-2px_10px_rgba(0,0,0,0.02)] z-10">
-        <NavItem to="/admin" icon={<Settings size={22} strokeWidth={1} />} label="投稿" />
-        <NavItem to="/admin/coupon" icon={<Ticket size={22} strokeWidth={1} />} label="クーポン" />
         <NavItem to="/admin/scan" icon={<CreditCard size={22} strokeWidth={1} />} label="決済" />
+        <NavItem to="/admin/coupon" icon={<Ticket size={22} strokeWidth={1} />} label="クーポン" />
+        <NavItem to="/admin/blog" icon={<Settings size={22} strokeWidth={1} />} label="投稿" />
         <NavItem to="/admin/history" icon={<Clock size={22} strokeWidth={1} />} label="履歴" />
       </nav>
     </div>
@@ -35,7 +35,7 @@ export const AdminLayout = () => {
 
 const NavItem = ({ to, icon, label }: { to: string; icon: React.ReactNode; label: string }) => {
   const location = useLocation();
-  const isActive = to === '/' || to === '/admin'
+  const isActive = to === '/'
     ? location.pathname === to
     : location.pathname.startsWith(to);
 
