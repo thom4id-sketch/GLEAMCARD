@@ -23,6 +23,7 @@ public class AppProperties {
     public static class Line {
         private String liffIdUser;
         private String liffIdAdmin;
+        private String channelAccessToken;
     }
 
     @Getter @Setter

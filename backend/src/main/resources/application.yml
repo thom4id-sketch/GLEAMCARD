@@ -33,6 +33,7 @@ app:
   line:
     liff-id-user: ${LIFF_ID_USER}
     liff-id-admin: ${LIFF_ID_ADMIN}
+    channel-access-token: ${LINE_CHANNEL_ACCESS_TOKEN:}
   upload:
     dir: ${UPLOAD_DIR:uploads}
   cors:

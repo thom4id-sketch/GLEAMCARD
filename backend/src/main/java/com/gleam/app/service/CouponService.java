@@ -11,6 +11,8 @@ import com.gleam.app.repository.PurchaseRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -24,6 +26,7 @@ public class CouponService {
     private final CouponRepository couponRepository;
     private final MemberRepository memberRepository;
     private final PurchaseRepository purchaseRepository;
+    private final LineMessagingService lineMessagingService;
 
     /**
      * 全会員にクーポンを一括配布する（管理者用）。
@@ -63,6 +66,25 @@ public class CouponService {
             .toList();
 
         couponRepository.saveAll(coupons);
+
+        // DBコミット後にLINE通知（コミット前に送ると整合性が取れないため）
+        List<String> lineUserIds = allMembers.stream()
+            .map(Member::getLineUserId)
+            .toList();
+        String finalDiscountDesc = discountDesc;
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                lineMessagingService.sendCouponNotification(
+                    lineUserIds,
+                    req.name(),
+                    finalDiscountDesc,
+                    req.expiresAt(),
+                    req.usageCondition()
+                );
+            }
+        });
+
         return coupons.size();
     }
 
