@@ -155,6 +155,17 @@ export const AdminCoupon = () => {
       : `お会計から${discountValue.toLocaleString()}円引き`
     : '—';
 
+  const handleExpiresAtChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 8);
+    let formatted = digits;
+    if (digits.length > 6) {
+      formatted = `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6)}`;
+    } else if (digits.length > 4) {
+      formatted = `${digits.slice(0, 4)}-${digits.slice(4)}`;
+    }
+    setExpiresAt(formatted);
+  };
+
   const [showConfirm, setShowConfirm] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -533,11 +544,11 @@ export const AdminCoupon = () => {
           <input
             type="text"
             inputMode="numeric"
-            placeholder="例: 2026-06-02"
+            placeholder="例: 20260602"
             required={hasExpiry}
             disabled={!hasExpiry}
             value={expiresAt}
-            onChange={e => setExpiresAt(e.target.value)}
+            onChange={handleExpiresAtChange}
             className="w-full border border-[#d0d0d0] bg-white px-3 py-3 text-sm focus:outline-none focus:border-[#5a5a5a] text-[#4a4a4a] font-mono disabled:bg-[#f0f0f0] disabled:text-[#a0a0a0]"
           />
         </div>
