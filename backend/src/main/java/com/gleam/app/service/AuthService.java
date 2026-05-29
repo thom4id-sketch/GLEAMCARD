@@ -1,9 +1,11 @@
 package com.gleam.app.service;
 
+import com.gleam.app.config.AppProperties;
 import com.gleam.app.dto.MemberDto;
 import com.gleam.app.dto.auth.AuthResponse;
 import com.gleam.app.entity.FriendInvitation;
 import com.gleam.app.entity.Member;
+import com.gleam.app.exception.ForbiddenException;
 import com.gleam.app.repository.FriendInvitationRepository;
 import com.gleam.app.repository.MemberRepository;
 import com.gleam.app.security.JwtTokenProvider;
@@ -13,6 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -24,9 +29,11 @@ public class AuthService {
     private final MemberRepository memberRepository;
     private final FriendInvitationRepository friendInvitationRepository;
     private final CouponService couponService;
+    private final AppProperties appProperties;
 
     /**
      * LINEログイン。
+     * - 管理者LIFF経由: 会員番号ホワイトリストチェック。非許可は ForbiddenException。
      * - 登録済み：JWT発行
      * - 未登録  ：isNewMember=true（フロントが /register へ誘導）
      */
@@ -34,12 +41,35 @@ public class AuthService {
         LineTokenVerifier.LineUserInfo userInfo = lineTokenVerifier.verifyIdToken(lineIdToken, liffId);
         boolean isAdmin = lineTokenVerifier.isAdminLiff(liffId);
 
+        if (isAdmin) {
+            Member member = memberRepository.findByLineUserId(userInfo.userId())
+                .orElseThrow(() -> new ForbiddenException("管理者権限がありません"));
+            checkAdminAllowed(member.getMemberNo());
+            String token = jwtTokenProvider.generateToken(member.getId(), member.getLineUserId(), true);
+            return new AuthResponse(token, true, false, MemberDto.from(member));
+        }
+
         return memberRepository.findByLineUserId(userInfo.userId())
             .map(member -> {
-                String token = jwtTokenProvider.generateToken(member.getId(), member.getLineUserId(), isAdmin);
-                return new AuthResponse(token, isAdmin, false, MemberDto.from(member));
+                String token = jwtTokenProvider.generateToken(member.getId(), member.getLineUserId(), false);
+                return new AuthResponse(token, false, false, MemberDto.from(member));
             })
             .orElse(new AuthResponse(null, false, true, null));
+    }
+
+    private void checkAdminAllowed(String memberNo) {
+        Set<String> allowed = parseAllowedMemberNos(appProperties.getAdmin().getAllowedMemberNos());
+        if (!allowed.isEmpty() && !allowed.contains(memberNo)) {
+            throw new ForbiddenException("管理者権限がありません");
+        }
+    }
+
+    private Set<String> parseAllowedMemberNos(String csv) {
+        if (csv == null || csv.isBlank()) return Set.of();
+        return Arrays.stream(csv.split(","))
+            .map(String::trim)
+            .filter(s -> !s.isEmpty())
+            .collect(Collectors.toSet());
     }
 
     /**
@@ -53,6 +83,10 @@ public class AuthService {
                                  java.time.LocalDate birthday, String gender) {
         LineTokenVerifier.LineUserInfo userInfo = lineTokenVerifier.verifyIdToken(lineIdToken, liffId);
         boolean isAdmin = lineTokenVerifier.isAdminLiff(liffId);
+
+        if (isAdmin) {
+            throw new ForbiddenException("管理者LIFFからの新規登録はできません");
+        }
 
         if (memberRepository.existsByLineUserId(userInfo.userId())) {
             throw new IllegalStateException("Already registered");

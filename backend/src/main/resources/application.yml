@@ -42,3 +42,5 @@ app:
       - https://*.vercel.app
       - https://liff.line.me
       - https://miniapp.line.me
+  admin:
+    allowed-member-nos: ${ADMIN_ALLOWED_MEMBER_NOS:}

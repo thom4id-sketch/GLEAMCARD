@@ -40,4 +40,12 @@ public class AppProperties {
             "https://miniapp.line.me"
         );
     }
+
+    @Getter @Setter
+    public static class Admin {
+        /** カンマ区切りの許可会員番号リスト（例: "10001,10002"）。空の場合は全員許可。 */
+        private String allowedMemberNos = "";
+    }
+
+    private Admin admin = new Admin();
 }

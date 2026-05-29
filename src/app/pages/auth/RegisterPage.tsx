@@ -15,7 +15,7 @@ export const RegisterPage = () => {
 
   const isHiragana = (str: string) => /^[ぁ-ゖー\s　]+$/.test(str);
 
-  const isFormValid = name.trim() && nameKana.trim() && isHiragana(nameKana.trim());
+  const isFormValid = name.trim() && nameKana.trim() && isHiragana(nameKana.trim()) && birthday && gender;
 
   const handleRegister = async () => {
     if (!isFormValid) return;
@@ -26,7 +26,7 @@ export const RegisterPage = () => {
     setLoading(true);
     setError('');
     try {
-      await completeRegistration(name.trim(), nameKana.trim(), birthday || undefined, gender || undefined);
+      await completeRegistration(name.trim(), nameKana.trim(), birthday, gender);
     } catch (e) {
       setError(e instanceof Error ? e.message : '登録に失敗しました。もう一度お試しください。');
       setLoading(false);
@@ -79,7 +79,7 @@ export const RegisterPage = () => {
                 type="text"
                 value={name}
                 onChange={e => setName(e.target.value)}
-                placeholder="例: 山田 太郎"
+                placeholder="例: 山田　太郎"
                 className="w-full border border-[#d0d0d0] bg-white px-3 py-3 text-sm focus:outline-none focus:border-[#5a5a5a] text-[#4a4a4a] transition-colors"
               />
             </div>
@@ -91,7 +91,7 @@ export const RegisterPage = () => {
                 type="text"
                 value={nameKana}
                 onChange={e => setNameKana(e.target.value)}
-                placeholder="例: やまだ たろう"
+                placeholder="例: やまだ　たろう"
                 className={`w-full border bg-white px-3 py-3 text-sm focus:outline-none text-[#4a4a4a] transition-colors ${
                   nameKana && !isHiragana(nameKana)
                     ? 'border-red-300 focus:border-red-400'
@@ -105,24 +105,23 @@ export const RegisterPage = () => {
 
             <div>
               <label className="block text-[11px] font-bold text-[#7a7a7a] tracking-widest mb-2">
-                生年月日 <span className="text-[#a0a0a0] font-normal">（任意）</span>
+                生年月日 <span className="text-red-500">*</span>
               </label>
               <input
-                type="text"
-                inputMode="numeric"
+                type="date"
                 value={birthday}
                 onChange={e => setBirthday(e.target.value)}
-                placeholder="例: 1990-04-15"
+                max={new Date().toISOString().slice(0, 10)}
                 className="w-full border border-[#d0d0d0] bg-white px-3 py-3 text-sm focus:outline-none focus:border-[#5a5a5a] text-[#4a4a4a] font-mono transition-colors"
               />
             </div>
 
             <div>
               <label className="block text-[11px] font-bold text-[#7a7a7a] tracking-widest mb-2">
-                性別 <span className="text-[#a0a0a0] font-normal">（任意）</span>
+                性別 <span className="text-red-500">*</span>
               </label>
               <div className="flex border border-[#d0d0d0] overflow-hidden">
-                {[{ value: '', label: '未設定' }, { value: 'MALE', label: '男性' }, { value: 'FEMALE', label: '女性' }, { value: 'OTHER', label: 'その他' }].map((opt, i) => (
+                {[{ value: 'MALE', label: '男性' }, { value: 'FEMALE', label: '女性' }, { value: 'OTHER', label: 'その他' }].map((opt, i) => (
                   <button
                     key={opt.value}
                     type="button"
