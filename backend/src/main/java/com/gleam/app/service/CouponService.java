@@ -1,5 +1,6 @@
 package com.gleam.app.service;
 
+import com.gleam.app.dto.coupon.CouponGroupDto;
 import com.gleam.app.dto.coupon.DistributeCouponRequest;
 import com.gleam.app.entity.Coupon;
 import com.gleam.app.entity.FriendInvitation;
@@ -96,6 +97,25 @@ public class CouponService {
             .isUsed(false)
             .invitation(invitation)
             .build());
+    }
+
+    @Transactional(readOnly = true)
+    public List<CouponGroupDto> getCouponHistory() {
+        return couponRepository.findDistributedCouponGroups().stream()
+            .map(row -> new CouponGroupDto(
+                (String) row[0],
+                (String) row[1],
+                (String) row[2],
+                row[3] != null ? row[3].toString() : null,
+                ((Number) row[4]).intValue(),
+                ((Number) row[5]).intValue(),
+                row[6] != null ? row[6].toString() : null
+            ))
+            .toList();
+    }
+
+    public void deleteCouponsByName(String name) {
+        couponRepository.deleteByCouponName(name);
     }
 
     private int calcAge(LocalDate birthday, LocalDate today) {

@@ -1,5 +1,6 @@
 package com.gleam.app.controller.admin;
 
+import com.gleam.app.dto.coupon.CouponGroupDto;
 import com.gleam.app.dto.coupon.DistributeCouponRequest;
 import com.gleam.app.dto.post.PostDto;
 import com.gleam.app.service.CouponService;
@@ -12,6 +13,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -56,5 +58,18 @@ public class AdminPostAndCouponController {
             @Valid @RequestBody DistributeCouponRequest request) {
         int count = couponService.distributeCoupon(request);
         return ResponseEntity.ok(Map.of("distributed", count));
+    }
+
+    /** GET /api/admin/coupons/history — 配布済みクーポン一覧（クーポン名ごとに集計） */
+    @GetMapping("/coupons/history")
+    public ResponseEntity<List<CouponGroupDto>> getCouponHistory() {
+        return ResponseEntity.ok(couponService.getCouponHistory());
+    }
+
+    /** DELETE /api/admin/coupons/by-name/{name} — クーポン名で一括削除 */
+    @DeleteMapping("/coupons/by-name/{name}")
+    public ResponseEntity<Void> deleteCouponsByName(@PathVariable String name) {
+        couponService.deleteCouponsByName(name);
+        return ResponseEntity.noContent().build();
     }
 }

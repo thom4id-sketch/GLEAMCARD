@@ -1,7 +1,17 @@
-import { useState } from 'react';
-import { Send, CheckCircle, Ticket } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Send, CheckCircle, Ticket, Trash2, AlertTriangle } from 'lucide-react';
 import { addDays, format } from 'date-fns';
 import { api } from '../../lib/api';
+
+interface CouponGroup {
+  name: string;
+  discountDesc: string;
+  usageCondition: string | null;
+  expiresAt: string | null;
+  totalCount: number;
+  usedCount: number;
+  createdAt: string | null;
+}
 
 type DiscountType = 'PERCENT' | 'AMOUNT';
 type Rank = 'REGULAR' | 'SILVER' | 'GOLD' | 'PLATINUM';
@@ -20,6 +30,9 @@ const ALL_GENDERS: { value: Gender; label: string }[] = [
 ];
 
 export const AdminCoupon = () => {
+  const [activeTab, setActiveTab] = useState<'distribute' | 'history'>('distribute');
+
+  // ── 配布タブ ──
   const [name, setName] = useState('');
   const [hasExpiry, setHasExpiry] = useState(true);
   const [expiresAt, setExpiresAt] = useState(format(addDays(new Date(), 30), 'yyyy-MM-dd'));
@@ -37,6 +50,43 @@ export const AdminCoupon = () => {
   const [ageMin, setAgeMin] = useState<number | ''>('');
   const [ageMax, setAgeMax] = useState<number | ''>('');
   const [targetHasPurchase, setTargetHasPurchase] = useState(false);
+
+  // ── 履歴タブ ──
+  const [history, setHistory] = useState<CouponGroup[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [historyError, setHistoryError] = useState('');
+
+  const loadHistory = useCallback(async () => {
+    setHistoryLoading(true);
+    setHistoryError('');
+    try {
+      const res = await api.get<CouponGroup[]>('/api/admin/coupons/history');
+      setHistory(res);
+    } catch (err) {
+      setHistoryError(err instanceof Error ? err.message : '取得に失敗しました');
+    } finally {
+      setHistoryLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === 'history') loadHistory();
+  }, [activeTab, loadHistory]);
+
+  const handleDelete = async (couponName: string) => {
+    setDeleteLoading(true);
+    try {
+      await api.delete(`/api/admin/coupons/by-name/${encodeURIComponent(couponName)}`);
+      setHistory(prev => prev.filter(g => g.name !== couponName));
+    } catch (err) {
+      setHistoryError(err instanceof Error ? err.message : '削除に失敗しました');
+    } finally {
+      setDeleteLoading(false);
+      setDeleteTarget(null);
+    }
+  };
 
   const toggleRank = (r: Rank) =>
     setTargetRanks(prev => prev.includes(r) ? prev.filter(x => x !== r) : [...prev, r]);
@@ -94,7 +144,114 @@ export const AdminCoupon = () => {
   const isFormValid = name.trim() && typeof discountValue === 'number' && discountValue > 0 && (!hasExpiry || expiresAt);
 
   return (
-    <div className="p-5 h-full flex flex-col overflow-y-auto overflow-x-hidden bg-[#f8f9fa] font-sans">
+    <div className="h-full flex flex-col overflow-hidden bg-[#f8f9fa] font-sans">
+      {/* タブ */}
+      <div className="flex bg-white border-b border-[#d0d0d0] flex-shrink-0">
+        <button
+          className={`flex-1 py-3 text-[10px] tracking-widest font-bold text-center border-b-2 transition-colors ${activeTab === 'distribute' ? 'border-[#5a5a5a] text-[#5a5a5a]' : 'border-transparent text-[#a0a0a0] hover:text-[#7a7a7a]'}`}
+          onClick={() => setActiveTab('distribute')}
+        >
+          配布
+        </button>
+        <button
+          className={`flex-1 py-3 text-[10px] tracking-widest font-bold text-center border-b-2 transition-colors ${activeTab === 'history' ? 'border-[#5a5a5a] text-[#5a5a5a]' : 'border-transparent text-[#a0a0a0] hover:text-[#7a7a7a]'}`}
+          onClick={() => setActiveTab('history')}
+        >
+          履歴
+        </button>
+      </div>
+
+      {/* 履歴タブ */}
+      {activeTab === 'history' && (
+        <div className="flex-1 overflow-y-auto p-5">
+          {historyError && (
+            <div className="border border-red-200 bg-red-50 text-red-600 p-4 mb-4 text-xs tracking-wide">
+              {historyError}
+            </div>
+          )}
+          {historyLoading ? (
+            <p className="text-center text-[10px] text-[#a0a0a0] tracking-widest animate-pulse py-16">読み込み中...</p>
+          ) : history.length === 0 ? (
+            <div className="text-center py-16 text-[#a0a0a0] border border-dashed border-[#d0d0d0] bg-white">
+              <Ticket className="mx-auto w-8 h-8 mb-4 opacity-50 stroke-1" />
+              <p className="text-[10px] tracking-widest">配布履歴はありません</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {history.map(group => (
+                <div key={group.name} className="bg-white border border-[#d0d0d0] p-4 shadow-sm">
+                  <div className="flex justify-between items-start gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-[#4a4a4a] tracking-wide mb-1 truncate">{group.name}</p>
+                      <p className="text-xs text-[#5a5a5a] font-serif mb-2">{group.discountDesc}</p>
+                      <div className="flex flex-wrap gap-x-4 gap-y-1">
+                        <span className="text-[9px] text-[#a0a0a0] font-mono tracking-widest">
+                          EXP: {group.expiresAt ? group.expiresAt.replace(/-/g, '/') : '無期限'}
+                        </span>
+                        {group.usageCondition && (
+                          <span className="text-[9px] text-[#a0a0a0] font-mono tracking-widest">{group.usageCondition}</span>
+                        )}
+                      </div>
+                      <div className="mt-2 flex items-center gap-3">
+                        <span className="text-[10px] text-[#7a7a7a] tracking-widest">
+                          配布 <strong className="text-[#4a4a4a]">{group.totalCount}</strong> 件
+                        </span>
+                        <span className="text-[10px] text-[#7a7a7a] tracking-widest">
+                          使用済み <strong className="text-[#4a4a4a]">{group.usedCount}</strong> 件
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setDeleteTarget(group.name)}
+                      className="flex-shrink-0 p-2 text-[#a0a0a0] hover:text-red-500 transition-colors"
+                    >
+                      <Trash2 size={16} strokeWidth={1.5} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 削除確認モーダル */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-6">
+          <div className="bg-white p-6 w-full max-w-xs shadow-lg">
+            <div className="flex items-center space-x-2 mb-4">
+              <AlertTriangle size={18} strokeWidth={1.5} className="text-[#5a5a5a]" />
+              <p className="text-xs font-bold text-[#4a4a4a] tracking-widest">クーポンを削除</p>
+            </div>
+            <p className="text-xs text-[#7a7a7a] mb-2 leading-relaxed">
+              <strong className="text-[#4a4a4a]">「{deleteTarget}」</strong> を一括削除します。
+            </p>
+            <p className="text-[10px] text-[#a0a0a0] tracking-widest mb-6">
+              未使用・使用済み含め全件削除されます。この操作は取り消せません。
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setDeleteTarget(null)}
+                disabled={deleteLoading}
+                className="flex-1 border border-[#d0d0d0] py-3 text-[10px] font-bold tracking-widest text-[#7a7a7a] hover:bg-[#f8f9fa] transition"
+              >
+                キャンセル
+              </button>
+              <button
+                onClick={() => handleDelete(deleteTarget)}
+                disabled={deleteLoading}
+                className="flex-1 bg-[#5a5a5a] text-white py-3 text-[10px] font-bold tracking-widest hover:bg-[#4a4a4a] transition disabled:opacity-50"
+              >
+                {deleteLoading ? '削除中...' : '削除する'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 配布タブ */}
+      {activeTab === 'distribute' && (
+      <div className="flex-1 overflow-y-auto p-5">
       <h2 className="text-xs font-bold text-[#5a5a5a] border-b border-[#d0d0d0] pb-3 mb-6 tracking-widest flex items-center">
         <Ticket className="w-4 h-4 mr-2 stroke-1" />
         クーポン一斉配布
@@ -180,7 +337,7 @@ export const AdminCoupon = () => {
             value={usageCondition}
             onChange={e => setUsageCondition(e.target.value)}
             className="w-full border border-[#d0d0d0] bg-white px-3 py-3 text-sm focus:outline-none focus:border-[#5a5a5a] text-[#4a4a4a] transition-colors"
-            placeholder="例: 税込5,000円以上のお買い上げで"
+            placeholder="例: サングラスの購入時のみ利用可能"
           />
           <p className="text-right text-[10px] text-[#a0a0a0] mt-1 font-mono">{usageCondition.length}/15</p>
         </div>
@@ -346,6 +503,8 @@ export const AdminCoupon = () => {
           </button>
         </div>
       </form>
+      </div>
+      )}
     </div>
   );
 };
