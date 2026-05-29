@@ -3,6 +3,14 @@ import { useStore } from '../../context/StoreContext';
 import { format, parseISO } from 'date-fns';
 import { ShoppingBag, Coins, ArrowRightLeft, Clock, XCircle } from 'lucide-react';
 
+const safeFormat = (dateStr: string, fmt: string): string => {
+  try {
+    return format(parseISO(dateStr), fmt);
+  } catch {
+    return '—';
+  }
+};
+
 export const UserHistory = () => {
   const { currentUser, purchases, pointHistory } = useStore();
   const [activeTab, setActiveTab] = useState<'purchase' | 'point'>('purchase');
@@ -45,7 +53,7 @@ export const UserHistory = () => {
                   <div className="flex justify-between items-start mb-4">
                     <div>
                       <span className="text-xs text-[#7a7a7a] font-mono tracking-widest block mb-1">
-                        {format(parseISO(purchase.date), 'yyyy.MM.dd HH:mm')}
+                        {safeFormat(purchase.date, 'yyyy.MM.dd HH:mm')}
                       </span>
                       <span className="text-sm font-bold text-[#4a4a4a] tracking-widest uppercase">{purchase.storeName}</span>
                     </div>
@@ -129,7 +137,7 @@ export const UserHistory = () => {
                       <div>
                         <p className="text-xs font-bold text-[#7a7a7a] tracking-wider">ポイント付与予定</p>
                         <p className="text-[10px] text-[#a0a0a0] mt-1 font-mono tracking-widest">
-                          {format(parseISO(p.date), 'yyyy.MM.dd')} の購入分
+                          {safeFormat(p.date, 'yyyy.MM.dd')} の購入分
                         </p>
                         <p className="text-[9px] text-[#a0a0a0] tracking-widest mt-0.5">購入日から3日後に付与</p>
                       </div>
@@ -150,7 +158,7 @@ export const UserHistory = () => {
                       <div>
                         <p className="text-xs font-bold text-[#4a4a4a] tracking-wider">{ph.description}</p>
                         <p className="text-[10px] text-[#7a7a7a] mt-1 font-mono tracking-widest">
-                          {format(parseISO(ph.date), 'yyyy.MM.dd HH:mm')}
+                          {safeFormat(ph.date, 'yyyy.MM.dd HH:mm')}
                         </p>
                       </div>
                     </div>

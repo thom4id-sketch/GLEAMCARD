@@ -296,7 +296,7 @@ export const AdminCoupon = () => {
               <p className="text-lg font-serif font-bold text-[#5a5a5a]">{previewDesc}</p>
               {hasExpiry ? (
                 <p className="text-[9px] text-[#a0a0a0] font-mono tracking-widest mt-3">
-                  EXP: {expiresAt ? format(new Date(expiresAt), 'yyyy/MM/dd') : '未設定'}
+                  EXP: {(() => { try { return expiresAt ? format(new Date(expiresAt), 'yyyy/MM/dd') : '未設定'; } catch { return '未設定'; } })()}
                 </p>
               ) : (
                 <p className="text-[9px] text-[#a0a0a0] font-mono tracking-widest mt-3">EXP: 無期限</p>
