@@ -119,10 +119,9 @@ public class PaymentService {
         int currentYear = LocalDate.now().getYear();
         OffsetDateTime windowStart = OffsetDateTime.of(currentYear - 2, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
 
-        // 既存の完了済み購入額（税込み合計）を集計し、税抜き換算
-        int existingRawSum = purchaseRepository.sumCompletedAmountSince(member, windowStart);
-        // 今回の購入を含めた3年間税抜き合計
-        int newTaxExcluded = (existingRawSum + req.amount()) * 10 / 11;
+        // 完了済み購入額（税込み合計）を集計 ※今回の購入はsave済みなので既に含まれている
+        int rawSum = purchaseRepository.sumCompletedAmountSince(member, windowStart);
+        int newTaxExcluded = rawSum * 10 / 11;
         member.setAnnualPurchaseAmount(newTaxExcluded);
         member.setLastPurchaseAt(now);
 
