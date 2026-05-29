@@ -67,14 +67,16 @@ export const UserCoupons = () => {
                     <span className="text-[9px] font-bold tracking-widest -rotate-90 whitespace-nowrap mt-4 font-serif">TICKET</span>
                   </div>
                   <div className="p-5 flex-1 border-l border-dashed border-[#7a7a7a] relative">
-                    <div className="text-[10px] tracking-widest text-[#7a7a7a] font-bold mb-2 uppercase">
-                      {coupon.type === 'friend' ? 'Friend Invite' : coupon.type === 'distribute' ? 'Distribution' : 'Special Gift'}
-                    </div>
                     <h3 className="text-sm font-bold text-[#4a4a4a] mb-2 tracking-wide leading-tight">{coupon.name}</h3>
                     <p className="text-lg font-serif font-bold text-[#5a5a5a]">{coupon.discountDesc}</p>
                     <p className="text-[9px] text-[#a0a0a0] font-mono tracking-widest mt-3">
                       EXP: {coupon.expiresAt ? coupon.expiresAt.replace(/-/g, '/') : '無期限'}
                     </p>
+                    {coupon.usageCondition && (
+                      <p className="text-[9px] text-[#a0a0a0] font-mono tracking-widest mt-1">
+                        {coupon.usageCondition}
+                      </p>
+                    )}
                   </div>
                 </div>
               ))

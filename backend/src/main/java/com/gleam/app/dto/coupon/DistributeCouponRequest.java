@@ -18,5 +18,6 @@ public record DistributeCouponRequest(
     List<String> targetGenders,     // ["MALE","FEMALE","OTHER"]
     Integer targetAgeMin,           // 以上
     Integer targetAgeMax,           // 以下
-    Boolean targetHasPurchase       // true: キャンセルなし購入履歴が1件以上ある会員のみ
+    Boolean targetHasPurchase,      // true: キャンセルなし購入履歴が1件以上ある会員のみ
+    @jakarta.validation.constraints.Size(max = 15) String usageCondition  // 任意・15文字以内
 ) {}

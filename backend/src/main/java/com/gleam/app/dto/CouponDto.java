@@ -11,6 +11,7 @@ public record CouponDto(
     int discountValue,
     String discountDesc,
     String couponType,
+    String usageCondition,
     LocalDate expiresAt
 ) {
     public static CouponDto from(Coupon coupon) {
@@ -21,6 +22,7 @@ public record CouponDto(
             coupon.getDiscountValue(),
             coupon.getDiscountDesc(),
             coupon.getCouponType().name(),
+            coupon.getUsageCondition(),
             coupon.getExpiresAt()
         );
     }

@@ -30,6 +30,7 @@ export interface Coupon {
   name: string;
   discountDesc: string;
   type: 'friend' | 'normal' | 'distribute';
+  usageCondition?: string;
   expiresAt?: string;
 }
 
@@ -69,6 +70,7 @@ interface CouponApi {
   discountValue: number;
   discountDesc: string;
   couponType: string;
+  usageCondition: string | null;
   expiresAt: string | null;
 }
 
@@ -172,6 +174,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
         name: c.name,
         discountDesc: c.discountDesc,
         type: couponTypeFrom(c.couponType),
+        usageCondition: c.usageCondition ?? undefined,
         expiresAt: c.expiresAt ?? undefined,
       })));
 

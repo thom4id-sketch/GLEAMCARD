@@ -25,6 +25,7 @@ export const AdminCoupon = () => {
   const [expiresAt, setExpiresAt] = useState(format(addDays(new Date(), 30), 'yyyy-MM-dd'));
   const [discountType, setDiscountType] = useState<DiscountType>('PERCENT');
   const [discountValue, setDiscountValue] = useState<number | ''>(10);
+  const [usageCondition, setUsageCondition] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -66,6 +67,7 @@ export const AdminCoupon = () => {
         targetAgeMin: typeof ageMin === 'number' ? ageMin : undefined,
         targetAgeMax: typeof ageMax === 'number' ? ageMax : undefined,
         targetHasPurchase: targetHasPurchase || undefined,
+        usageCondition: usageCondition.trim() || undefined,
       });
 
       setDistributedCount(res.distributed);
@@ -74,6 +76,7 @@ export const AdminCoupon = () => {
       setHasExpiry(true);
       setDiscountType('PERCENT');
       setDiscountValue(10);
+      setUsageCondition('');
       setTargetRanks([]);
       setTargetGenders([]);
       setAgeMin('');
@@ -164,6 +167,22 @@ export const AdminCoupon = () => {
               </span>
             </div>
           </div>
+        </div>
+
+        {/* 利用条件 */}
+        <div>
+          <label className="block text-[11px] font-bold text-[#7a7a7a] tracking-widest mb-2">
+            利用条件 <span className="text-[#a0a0a0] font-normal">（任意・15文字以内）</span>
+          </label>
+          <input
+            type="text"
+            maxLength={15}
+            value={usageCondition}
+            onChange={e => setUsageCondition(e.target.value)}
+            className="w-full border border-[#d0d0d0] bg-white px-3 py-3 text-sm focus:outline-none focus:border-[#5a5a5a] text-[#4a4a4a] transition-colors"
+            placeholder="例: 税込5,000円以上のお買い上げで"
+          />
+          <p className="text-right text-[10px] text-[#a0a0a0] mt-1 font-mono">{usageCondition.length}/15</p>
         </div>
 
         {/* 使用期限 */}
@@ -300,6 +319,11 @@ export const AdminCoupon = () => {
                 </p>
               ) : (
                 <p className="text-[9px] text-[#a0a0a0] font-mono tracking-widest mt-3">EXP: 無期限</p>
+              )}
+              {usageCondition.trim() && (
+                <p className="text-[9px] text-[#a0a0a0] font-mono tracking-widest mt-1">
+                  {usageCondition.trim()}
+                </p>
               )}
             </div>
           </div>

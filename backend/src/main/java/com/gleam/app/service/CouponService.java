@@ -56,6 +56,7 @@ public class CouponService {
                 .discountDesc(discountDesc)
                 .couponType(Coupon.CouponType.DISTRIBUTE)
                 .isUsed(false)
+                .usageCondition(req.usageCondition())
                 .expiresAt(req.expiresAt())
                 .build())
             .toList();

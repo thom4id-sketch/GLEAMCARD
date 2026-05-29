@@ -45,6 +45,9 @@ public class Coupon {
     @JoinColumn(name = "invitation_id")
     private FriendInvitation invitation;
 
+    @Column(name = "usage_condition", length = 30)
+    private String usageCondition;
+
     @Column(name = "expires_at")
     private LocalDate expiresAt;
 
