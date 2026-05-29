@@ -137,6 +137,8 @@ public class CouponService {
     }
 
     public void deleteCouponsByName(String name) {
+        // purchases.coupon_id の参照をNULLにしてから削除（外部キー制約回避）
+        purchaseRepository.nullifyCouponReferencesByName(name);
         couponRepository.deleteByCouponName(name);
     }
 

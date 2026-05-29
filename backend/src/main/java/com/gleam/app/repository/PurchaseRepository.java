@@ -33,4 +33,9 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long> {
     // 購入経験者フィルタ用：完了済み購入が1件以上ある会員IDセット
     @Query("SELECT DISTINCT p.member.id FROM Purchase p WHERE p.status = 'COMPLETED'")
     java.util.Set<Long> findMemberIdsWithCompletedPurchase();
+
+    // クーポン削除前に参照をNULLクリア（外部キー制約回避）
+    @org.springframework.data.jpa.repository.Modifying
+    @Query(value = "UPDATE purchases SET coupon_id = NULL WHERE coupon_id IN (SELECT id FROM coupons WHERE name = :name AND coupon_type != 'FRIEND')", nativeQuery = true)
+    void nullifyCouponReferencesByName(@Param("name") String name);
 }
