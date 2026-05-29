@@ -13,7 +13,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Optional<Member> findByMemberNo(String memberNo);
     boolean existsByLineUserId(String lineUserId);
 
-    // 最後の購入から1年以上経過しているメンバー（ポイント失効対象）
+    // 最後の購入から3年以上経過しているメンバー（ポイント失効対象）
     @Query("SELECT m FROM Member m WHERE m.points > 0 AND m.lastPurchaseAt < :expiryThreshold")
     List<Member> findMembersWithExpiredPoints(OffsetDateTime expiryThreshold);
 

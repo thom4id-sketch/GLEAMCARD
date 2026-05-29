@@ -30,7 +30,14 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const res = await fetch(`${BASE}${path}`, { ...options, headers });
 
   if (!res.ok) {
-    const msg = await res.text().catch(() => res.statusText);
+    const text = await res.text().catch(() => '');
+    let msg = text || res.statusText;
+    try {
+      const json = JSON.parse(text);
+      if (json?.error) msg = json.error;
+    } catch {
+      // raw text のまま使う
+    }
     throw new Error(msg || `HTTP ${res.status}`);
   }
   if (res.status === 204) return undefined as T;

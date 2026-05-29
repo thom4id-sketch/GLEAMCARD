@@ -52,6 +52,11 @@ public class LineTokenVerifier {
             log.warn("LINE ID token verification failed: status={} body={}",
                 e.getStatusCode(), e.getResponseBodyAsString());
             throw new IllegalArgumentException("Invalid LINE ID token");
+        } catch (IllegalArgumentException e) {
+            throw e;
+        } catch (Exception e) {
+            log.warn("LINE ID token verification request error", e);
+            throw new IllegalArgumentException("LINE token verification failed");
         }
     }
 
