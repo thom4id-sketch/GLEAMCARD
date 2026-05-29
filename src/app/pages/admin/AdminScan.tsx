@@ -137,6 +137,7 @@ export const AdminScan = () => {
   const rankLabel = (rank: string) => {
     if (rank === 'PLATINUM') return 'Platinum';
     if (rank === 'GOLD') return 'Gold';
+    if (rank === 'SILVER') return 'Silver';
     return 'Regular';
   };
 

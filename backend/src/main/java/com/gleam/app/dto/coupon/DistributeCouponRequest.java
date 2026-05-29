@@ -14,8 +14,9 @@ public record DistributeCouponRequest(
     LocalDate expiresAt,            // 任意
 
     // ── ターゲティング（すべて任意。未指定の場合は全会員対象）──
-    List<String> targetRanks,       // ["REGULAR","GOLD","PLATINUM"]
+    List<String> targetRanks,       // ["REGULAR","SILVER","GOLD","PLATINUM"]
     List<String> targetGenders,     // ["MALE","FEMALE","OTHER"]
     Integer targetAgeMin,           // 以上
-    Integer targetAgeMax            // 以下
+    Integer targetAgeMax,           // 以下
+    Boolean targetHasPurchase       // true: キャンセルなし購入履歴が1件以上ある会員のみ
 ) {}

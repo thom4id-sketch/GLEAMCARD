@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
 /**
  * 決済処理サービス。
@@ -122,18 +123,25 @@ public class PaymentService {
             }
         }
 
-        // --- 年間購入額更新・会員ランク即時チェック ---
-        int newAnnualPurchase = member.getAnnualPurchaseAmount() + req.amount();
-        member.setAnnualPurchaseAmount(newAnnualPurchase);
+        // --- 3年ローリングウィンドウで購入額集計・ランク判定 ---
+        // ウィンドウ: (当年 - 2)/1/1 〜 当年/12/31（例: 2026年なら2024/1/1〜2026/12/31）
+        int currentYear = LocalDate.now().getYear();
+        OffsetDateTime windowStart = OffsetDateTime.of(currentYear - 2, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+
+        // 既存の完了済み購入額（税込み合計）を集計し、税抜き換算
+        int existingRawSum = purchaseRepository.sumCompletedAmountSince(member, windowStart);
+        // 今回の購入を含めた3年間税抜き合計
+        int newTaxExcluded = (existingRawSum + req.amount()) * 10 / 11;
+        member.setAnnualPurchaseAmount(newTaxExcluded);
         member.setLastPurchaseAt(now);
 
         Member.Rank oldRank = member.getRank();
-        Member.Rank newRank = Member.Rank.fromAnnualPurchase(newAnnualPurchase);
+        Member.Rank newRank = Member.Rank.fromThreeYearPurchase(newTaxExcluded);
         boolean rankChanged = newRank.ordinal() > oldRank.ordinal();
         if (rankChanged) {
             member.setRank(newRank);
-            // ランク有効期限 = 翌年12月31日
-            member.setRankExpiresAt(LocalDate.of(LocalDate.now().getYear() + 1, 12, 31));
+            // ランク有効期限 = 当年12月31日（3年ウィンドウなので当年末まで）
+            member.setRankExpiresAt(LocalDate.of(currentYear, 12, 31));
         }
 
         memberRepository.save(member);
@@ -224,10 +232,11 @@ public class PaymentService {
             }
         });
 
-        // 5. 年間購入額を減算（ランクの取り消しは行わない）
-        member.setAnnualPurchaseAmount(
-            Math.max(0, member.getAnnualPurchaseAmount() - purchase.getAmount())
-        );
+        // 5. キャンセル後の3年間合計を再集計（ランクの取り消しは行わない）
+        int cancelYear = LocalDate.now().getYear();
+        OffsetDateTime cancelWindowStart = OffsetDateTime.of(cancelYear - 2, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+        int rawSumAfterCancel = purchaseRepository.sumCompletedAmountSince(member, cancelWindowStart);
+        member.setAnnualPurchaseAmount(rawSumAfterCancel * 10 / 11);
         memberRepository.save(member);
     }
 

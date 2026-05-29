@@ -10,12 +10,14 @@ export const UserCard = () => {
 
   const rankColors = {
     Regular: "bg-[#4a4a4a] text-white",
+    Silver: "bg-gradient-to-br from-[#7a7a7a] to-[#b0b0b0] text-white",
     Gold: "bg-[#b89b5e] text-white",
     Platinum: "bg-gradient-to-br from-[#f4f5f7] to-[#cdd1d8] text-[#2c3036]",
   };
 
   const rankLabels = {
     Regular: "REGULAR",
+    Silver: "SILVER",
     Gold: "GOLD",
     Platinum: "PLATINUM",
   };
@@ -40,7 +42,7 @@ export const UserCard = () => {
                 {currentUser.memberNo}
               </p>
             </div>
-            <div className={`border px-3 py-1 text-[10px] tracking-widest font-bold font-serif ${currentUser.rank === 'Platinum' ? 'border-[#5a5a5a]' : 'border-white/40'}`}>
+            <div className={`border px-3 py-1 text-[10px] tracking-widest font-bold font-serif ${currentUser.rank === 'Platinum' ? 'border-[#5a5a5a]' : 'border-white/50'}`}>
               {rankLabels[currentUser.rank]}
             </div>
           </div>
@@ -60,13 +62,15 @@ export const UserCard = () => {
                 ¥{currentUser.annualPurchase.toLocaleString()}
               </span>
             </div>
-            {currentUser.rank !== "Platinum" && (
-              <p className="text-[10px] opacity-80 mt-2 text-right tracking-widest">
-                NEXT RANK: ¥{(
-                  (currentUser.rank === "Regular"
-                    ? 50000
-                    : 100000) - currentUser.annualPurchase
-                ).toLocaleString()}
+            <p className="text-[9px] opacity-60 text-right tracking-widest">税抜き金額</p>
+            {currentUser.rank === "Regular" && (
+              <p className="text-[10px] opacity-80 mt-1 text-right tracking-widest">
+                NEXT RANK: ¥{(300_000 - currentUser.annualPurchase).toLocaleString()}
+              </p>
+            )}
+            {currentUser.rank === "Silver" && (
+              <p className="text-[10px] opacity-80 mt-1 text-right tracking-widest">
+                NEXT RANK: ¥{(1_000_000 - currentUser.annualPurchase).toLocaleString()}
               </p>
             )}
           </div>

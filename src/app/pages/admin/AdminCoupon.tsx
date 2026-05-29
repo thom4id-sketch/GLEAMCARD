@@ -4,11 +4,12 @@ import { addDays, format } from 'date-fns';
 import { api } from '../../lib/api';
 
 type DiscountType = 'PERCENT' | 'AMOUNT';
-type Rank = 'REGULAR' | 'GOLD' | 'PLATINUM';
+type Rank = 'REGULAR' | 'SILVER' | 'GOLD' | 'PLATINUM';
 type Gender = 'MALE' | 'FEMALE' | 'OTHER';
 
 const ALL_RANKS: { value: Rank; label: string }[] = [
   { value: 'REGULAR', label: 'レギュラー' },
+  { value: 'SILVER', label: 'シルバー' },
   { value: 'GOLD', label: 'ゴールド' },
   { value: 'PLATINUM', label: 'プラチナ' },
 ];
@@ -34,6 +35,7 @@ export const AdminCoupon = () => {
   const [targetGenders, setTargetGenders] = useState<Gender[]>([]);
   const [ageMin, setAgeMin] = useState<number | ''>('');
   const [ageMax, setAgeMax] = useState<number | ''>('');
+  const [targetHasPurchase, setTargetHasPurchase] = useState(false);
 
   const toggleRank = (r: Rank) =>
     setTargetRanks(prev => prev.includes(r) ? prev.filter(x => x !== r) : [...prev, r]);
@@ -63,6 +65,7 @@ export const AdminCoupon = () => {
         targetGenders: targetGenders.length > 0 ? targetGenders : undefined,
         targetAgeMin: typeof ageMin === 'number' ? ageMin : undefined,
         targetAgeMax: typeof ageMax === 'number' ? ageMax : undefined,
+        targetHasPurchase: targetHasPurchase || undefined,
       });
 
       setDistributedCount(res.distributed);
@@ -75,6 +78,7 @@ export const AdminCoupon = () => {
       setTargetGenders([]);
       setAgeMin('');
       setAgeMax('');
+      setTargetHasPurchase(false);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 4000);
     } catch (err) {
@@ -196,6 +200,22 @@ export const AdminCoupon = () => {
             配布対象 <span className="text-[#a0a0a0] font-normal">（未選択の場合は全員対象）</span>
           </label>
 
+          {/* 購入経験 */}
+          <p className="text-[10px] text-[#7a7a7a] tracking-widest mb-2">購入履歴</p>
+          <div className="flex flex-wrap gap-2 mb-4">
+            <button
+              type="button"
+              onClick={() => setTargetHasPurchase(prev => !prev)}
+              className={`px-3 py-2 text-[10px] font-bold tracking-widest border transition-colors ${
+                targetHasPurchase
+                  ? 'bg-[#5a5a5a] text-white border-[#5a5a5a]'
+                  : 'bg-white text-[#7a7a7a] border-[#d0d0d0] hover:bg-[#f0f0f0]'
+              }`}
+            >
+              購入経験者
+            </button>
+          </div>
+
           {/* ランク */}
           <p className="text-[10px] text-[#7a7a7a] tracking-widest mb-2">会員ランク</p>
           <div className="flex flex-wrap gap-2 mb-4">
@@ -295,7 +315,7 @@ export const AdminCoupon = () => {
             <span>
               {loading
                 ? '配布中...'
-                : (targetRanks.length || targetGenders.length || typeof ageMin === 'number' || typeof ageMax === 'number')
+                : (targetRanks.length || targetGenders.length || typeof ageMin === 'number' || typeof ageMax === 'number' || targetHasPurchase)
                   ? '対象会員に配布する'
                   : '全会員に配布する'}
             </span>

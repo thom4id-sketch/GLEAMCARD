@@ -37,25 +37,26 @@ export const PointInfo = () => {
           </div>
           <div className="text-xs text-[#7a7a7a] mb-6 space-y-4 leading-relaxed">
             <p>
-              年間（1月1日〜12月31日）のお買い上げ金額に応じてランクアップし、ポイント付与率が上昇します。
+              直近3年間のお買い上げ累計金額（税抜き）に応じてランクアップし、ポイント付与率が上昇します。
             </p>
             <ul className="list-disc pl-4 space-y-3">
-              <li>年間購入額の条件を満たした場合、<strong className="text-[#4a4a4a]">即時ランクアップ</strong>となり、新しいランクの付与率は<strong className="text-[#4a4a4a]">次の決済から有効</strong>となります。</li>
-              <li>獲得した会員ランクは、<strong className="text-[#4a4a4a]">翌年の12月31日まで有効</strong>です。</li>
+              <li>集計期間は<strong className="text-[#4a4a4a]">当年を含む過去3年間（1月1日〜12月31日）</strong>が対象となります。</li>
+              <li>購入額の条件を満たした場合、<strong className="text-[#4a4a4a]">即時ランクアップ</strong>となり、新しいランクの付与率は<strong className="text-[#4a4a4a]">次の決済から有効</strong>となります。</li>
               <li>
                 <div className="bg-[#f8f9fa] p-4 border border-[#d0d0d0] mt-3 mb-2 font-mono text-[10px] leading-relaxed text-[#5a5a5a]">
-                  <strong className="text-[#4a4a4a]">【EX】</strong> 顧客A様が 2024年3月5日に「GOLD」にランクアップした場合<br/><br/>
-                  ・2025年12月31日までGOLDが有効となり、2026年1月1日にランクリセットが行われます。<br/>
-                  ・2025年内のランクポイントは2025年内の購入情報で貯まり、この結果に応じて2026年の会員ランクが決定します。
+                  <strong className="text-[#4a4a4a]">【EX】</strong> 2026年の集計対象期間<br/><br/>
+                  　2024年1月1日 〜 2026年12月31日<br/><br/>
+                  2027年になると対象期間が切り替わります。<br/>
+                  　2025年1月1日 〜 2027年12月31日
                 </div>
               </li>
-              <li>尚、年度内の総合ランクポイントが前年度を超え、来年反映予定の会員ランクが現在の会員ランクを上回った場合は、<strong className="text-[#4a4a4a]">当年度にも直ちに新しい会員ランクが反映</strong>されます。</li>
             </ul>
           </div>
-          
+
+          <p className="text-[10px] text-[#a0a0a0] mb-4 tracking-widest">※購入額は税抜き金額が基準です</p>
           <div className="space-y-4">
             {/* Regular */}
-            <div className="border border-[#c0c0c0] p-4 relative overflow-hidden flex justify-between items-center bg-[#4a4a4a] text-white">
+            <div className="border border-[#c0c0c0] p-4 flex justify-between items-center bg-[#4a4a4a] text-white">
               <div>
                 <span className="font-serif tracking-widest text-sm uppercase">Regular</span>
                 <p className="text-[9px] mt-1 font-mono tracking-widest text-[#d0d0d0]">BASIC RANK</p>
@@ -63,20 +64,29 @@ export const PointInfo = () => {
               <span className="text-[10px] border border-white/40 px-3 py-1 font-mono tracking-widest">5%</span>
             </div>
 
+            {/* Silver */}
+            <div className="border border-[#a0a0a0] p-4 flex justify-between items-center bg-gradient-to-br from-[#7a7a7a] to-[#b0b0b0] text-white">
+              <div>
+                <span className="font-serif tracking-widest text-sm uppercase">Silver</span>
+                <p className="text-[9px] mt-1 font-mono tracking-widest text-[#e8e8e8]">OVER ¥300,000</p>
+              </div>
+              <span className="text-[10px] border border-white/50 px-3 py-1 font-mono tracking-widest">8%</span>
+            </div>
+
             {/* Gold */}
-            <div className="border border-[#c2a76f] p-4 relative overflow-hidden flex justify-between items-center bg-[#b89b5e] text-white">
+            <div className="border border-[#c2a76f] p-4 flex justify-between items-center bg-[#b89b5e] text-white">
               <div>
                 <span className="font-serif tracking-widest text-sm uppercase">Gold</span>
-                <p className="text-[9px] mt-1 font-mono tracking-widest text-[#f0e6d2]">OVER ¥50,000</p>
+                <p className="text-[9px] mt-1 font-mono tracking-widest text-[#f0e6d2]">OVER ¥1,000,000</p>
               </div>
-              <span className="text-[10px] border border-white/40 px-3 py-1 font-mono tracking-widest">8%</span>
+              <span className="text-[10px] border border-white/40 px-3 py-1 font-mono tracking-widest">10%</span>
             </div>
 
             {/* Platinum */}
-            <div className="border border-[#c0c4cc] p-4 relative overflow-hidden flex justify-between items-center bg-gradient-to-br from-[#f4f5f7] to-[#cdd1d8] text-[#2c3036]">
+            <div className="border border-[#c0c4cc] p-4 flex justify-between items-center bg-gradient-to-br from-[#f4f5f7] to-[#cdd1d8] text-[#2c3036]">
               <div>
                 <span className="font-serif tracking-widest text-sm uppercase font-bold">Platinum</span>
-                <p className="text-[9px] mt-1 font-mono tracking-widest text-[#5a5f68]">OVER ¥100,000</p>
+                <p className="text-[9px] mt-1 font-mono tracking-widest text-[#5a5f68]">COMING SOON</p>
               </div>
               <span className="text-[10px] border border-[#a0a6b2] px-3 py-1 font-mono tracking-widest font-bold">10%</span>
             </div>

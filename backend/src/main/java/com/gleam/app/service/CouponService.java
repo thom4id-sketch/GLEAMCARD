@@ -6,6 +6,7 @@ import com.gleam.app.entity.FriendInvitation;
 import com.gleam.app.entity.Member;
 import com.gleam.app.repository.CouponRepository;
 import com.gleam.app.repository.MemberRepository;
+import com.gleam.app.repository.PurchaseRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,7 @@ public class CouponService {
 
     private final CouponRepository couponRepository;
     private final MemberRepository memberRepository;
+    private final PurchaseRepository purchaseRepository;
 
     /**
      * 全会員にクーポンを一括配布する（管理者用）。
@@ -33,12 +35,16 @@ public class CouponService {
         LocalDate today = LocalDate.now();
         Set<String> ranks   = (req.targetRanks()   != null && !req.targetRanks().isEmpty())   ? Set.copyOf(req.targetRanks())   : null;
         Set<String> genders = (req.targetGenders()  != null && !req.targetGenders().isEmpty())  ? Set.copyOf(req.targetGenders())  : null;
+        Set<Long> purchasedIds = Boolean.TRUE.equals(req.targetHasPurchase())
+            ? purchaseRepository.findMemberIdsWithCompletedPurchase()
+            : null;
 
         List<Member> allMembers = memberRepository.findAll().stream()
             .filter(m -> ranks == null || ranks.contains(m.getRank().name()))
             .filter(m -> genders == null || (m.getGender() != null && genders.contains(m.getGender())))
             .filter(m -> req.targetAgeMin() == null || (m.getBirthday() != null && calcAge(m.getBirthday(), today) >= req.targetAgeMin()))
             .filter(m -> req.targetAgeMax() == null || (m.getBirthday() != null && calcAge(m.getBirthday(), today) <= req.targetAgeMax()))
+            .filter(m -> purchasedIds == null || purchasedIds.contains(m.getId()))
             .toList();
 
         List<Coupon> coupons = allMembers.stream()

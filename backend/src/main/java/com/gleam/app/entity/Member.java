@@ -71,19 +71,21 @@ public class Member {
     }
 
     public enum Rank {
-        REGULAR, GOLD, PLATINUM;
+        REGULAR, SILVER, GOLD, PLATINUM;
 
         public double getPointRate() {
             return switch (this) {
                 case PLATINUM -> 0.10;
-                case GOLD     -> 0.08;
+                case GOLD     -> 0.10;
+                case SILVER   -> 0.08;
                 default       -> 0.05;
             };
         }
 
-        public static Rank fromAnnualPurchase(int amount) {
-            if (amount >= 100_000) return PLATINUM;
-            if (amount >= 50_000)  return GOLD;
+        /** 3年間累計購入額（税抜き）でランクを判定。Platinumは自動昇格なし。 */
+        public static Rank fromThreeYearPurchase(int taxExcludedAmount) {
+            if (taxExcludedAmount >= 1_000_000) return GOLD;
+            if (taxExcludedAmount >= 300_000)   return SILVER;
             return REGULAR;
         }
     }
