@@ -1,9 +1,16 @@
 import { RouterProvider } from 'react-router';
 import { router } from './routes';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { StoreProvider } from './context/StoreContext';
+import { StoreProvider, useStore } from './context/StoreContext';
 import { RegisterPage } from './pages/auth/RegisterPage';
 import { LoadingScreen } from './components/LoadingScreen';
+
+/** 投稿データ読み込み完了までローディングを継続するゲート */
+const DataGate = () => {
+  const { postsLoaded } = useStore();
+  if (!postsLoaded) return <LoadingScreen />;
+  return <RouterProvider router={router} />;
+};
 
 /** 認証状態に応じてコンテンツを切り替えるゲート */
 const AuthGate = () => {
@@ -31,7 +38,7 @@ const AuthGate = () => {
   // status === 'ready'
   return (
     <StoreProvider>
-      <RouterProvider router={router} />
+      <DataGate />
     </StoreProvider>
   );
 };

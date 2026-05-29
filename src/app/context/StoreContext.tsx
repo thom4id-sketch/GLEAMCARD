@@ -137,6 +137,7 @@ interface StoreState {
   purchases: Purchase[];
   pointHistory: PointHistory[];
   loading: boolean;
+  postsLoaded: boolean;
   /** 友達招待リンクを取得（毎回新規 invitation 生成） */
   issueFriendLink: () => Promise<string>;
   /** 最新の会員情報・ポイント履歴を再取得 */
@@ -153,6 +154,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [pointHistory, setPointHistory] = useState<PointHistory[]>([]);
   const [loading, setLoading] = useState(false);
+  const [postsLoaded, setPostsLoaded] = useState(false);
 
   // ユーザーデータを API から読み込む
   const loadUserData = useCallback(async () => {
@@ -198,14 +200,18 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
 
   // 投稿一覧は認証不要でロード
   const loadPosts = useCallback(async () => {
-    const res = await api.get<{ content: PostApi[] }>('/api/posts?size=20');
-    setPosts(res.content.map(p => ({
-      id: String(p.id),
-      title: p.title,
-      image: p.imageData,
-      url: p.linkUrl ?? '',
-      date: p.createdAt,
-    })));
+    try {
+      const res = await api.get<{ content: PostApi[] }>('/api/posts?size=20');
+      setPosts(res.content.map(p => ({
+        id: String(p.id),
+        title: p.title,
+        image: p.imageData,
+        url: p.linkUrl ?? '',
+        date: p.createdAt,
+      })));
+    } finally {
+      setPostsLoaded(true);
+    }
   }, []);
 
   useEffect(() => {
@@ -231,7 +237,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <StoreContext.Provider
-      value={{ currentUser, posts, coupons, purchases, pointHistory, loading, issueFriendLink, refresh }}
+      value={{ currentUser, posts, coupons, purchases, pointHistory, loading, postsLoaded, issueFriendLink, refresh }}
     >
       {children}
     </StoreContext.Provider>
