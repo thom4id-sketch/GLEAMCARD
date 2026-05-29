@@ -1,7 +1,25 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Send, CheckCircle, Ticket, Trash2, AlertTriangle } from 'lucide-react';
+import { Send, CheckCircle, Ticket, Trash2, AlertTriangle, Save, FolderOpen } from 'lucide-react';
 import { addDays, format } from 'date-fns';
 import { api } from '../../lib/api';
+
+const DRAFT_STORAGE_KEY = 'gleam_coupon_drafts';
+
+interface CouponDraft {
+  id: string;
+  savedAt: string;
+  name: string;
+  discountType: DiscountType;
+  discountValue: number | '';
+  hasExpiry: boolean;
+  expiresAt: string;
+  usageCondition: string;
+  targetRanks: Rank[];
+  targetGenders: Gender[];
+  ageMin: number | '';
+  ageMax: number | '';
+  targetHasPurchase: boolean;
+}
 
 interface CouponGroup {
   name: string;
@@ -30,7 +48,7 @@ const ALL_GENDERS: { value: Gender; label: string }[] = [
 ];
 
 export const AdminCoupon = () => {
-  const [activeTab, setActiveTab] = useState<'distribute' | 'history'>('distribute');
+  const [activeTab, setActiveTab] = useState<'distribute' | 'draft' | 'history'>('distribute');
 
   // ── 配布タブ ──
   const [name, setName] = useState('');
@@ -86,6 +104,44 @@ export const AdminCoupon = () => {
       setDeleteLoading(false);
       setDeleteTarget(null);
     }
+  };
+
+  // ── 下書きタブ ──
+  const [drafts, setDrafts] = useState<CouponDraft[]>(() => {
+    try { return JSON.parse(localStorage.getItem(DRAFT_STORAGE_KEY) ?? '[]'); } catch { return []; }
+  });
+
+  const saveDraft = () => {
+    const draft: CouponDraft = {
+      id: Date.now().toString(),
+      savedAt: new Date().toISOString(),
+      name, discountType, discountValue, hasExpiry, expiresAt,
+      usageCondition, targetRanks, targetGenders, ageMin, ageMax, targetHasPurchase,
+    };
+    const next = [draft, ...drafts];
+    setDrafts(next);
+    localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(next));
+  };
+
+  const loadDraft = (draft: CouponDraft) => {
+    setName(draft.name);
+    setDiscountType(draft.discountType);
+    setDiscountValue(draft.discountValue);
+    setHasExpiry(draft.hasExpiry);
+    setExpiresAt(draft.expiresAt);
+    setUsageCondition(draft.usageCondition);
+    setTargetRanks(draft.targetRanks);
+    setTargetGenders(draft.targetGenders);
+    setAgeMin(draft.ageMin);
+    setAgeMax(draft.ageMax);
+    setTargetHasPurchase(draft.targetHasPurchase);
+    setActiveTab('distribute');
+  };
+
+  const deleteDraft = (id: string) => {
+    const next = drafts.filter(d => d.id !== id);
+    setDrafts(next);
+    localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(next));
   };
 
   const toggleRank = (r: Rank) =>
@@ -160,12 +216,74 @@ export const AdminCoupon = () => {
           配布
         </button>
         <button
+          className={`flex-1 py-3 text-[10px] tracking-widest font-bold text-center border-b-2 transition-colors relative ${activeTab === 'draft' ? 'border-[#5a5a5a] text-[#5a5a5a]' : 'border-transparent text-[#a0a0a0] hover:text-[#7a7a7a]'}`}
+          onClick={() => setActiveTab('draft')}
+        >
+          下書き
+          {drafts.length > 0 && (
+            <span className="absolute top-2 right-3 w-4 h-4 bg-[#5a5a5a] text-white text-[9px] rounded-full flex items-center justify-center font-mono">
+              {drafts.length}
+            </span>
+          )}
+        </button>
+        <button
           className={`flex-1 py-3 text-[10px] tracking-widest font-bold text-center border-b-2 transition-colors ${activeTab === 'history' ? 'border-[#5a5a5a] text-[#5a5a5a]' : 'border-transparent text-[#a0a0a0] hover:text-[#7a7a7a]'}`}
           onClick={() => setActiveTab('history')}
         >
           履歴
         </button>
       </div>
+
+      {/* 下書きタブ */}
+      {activeTab === 'draft' && (
+        <div className="flex-1 overflow-y-auto p-5">
+          {drafts.length === 0 ? (
+            <div className="text-center py-16 text-[#a0a0a0] border border-dashed border-[#d0d0d0] bg-white">
+              <Save className="mx-auto w-8 h-8 mb-4 opacity-50 stroke-1" />
+              <p className="text-[10px] tracking-widest">保存された下書きはありません</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {drafts.map(draft => (
+                <div key={draft.id} className="bg-white border border-[#d0d0d0] p-4 shadow-sm">
+                  <div className="flex justify-between items-start gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-[#4a4a4a] tracking-wide mb-1 truncate">
+                        {draft.name || '（名称未設定）'}
+                      </p>
+                      <p className="text-xs text-[#5a5a5a] font-serif mb-1">
+                        {typeof draft.discountValue === 'number'
+                          ? draft.discountType === 'PERCENT'
+                            ? `${draft.discountValue}%OFF`
+                            : `${draft.discountValue.toLocaleString()}円引き`
+                          : '—'}
+                      </p>
+                      <p className="text-[9px] text-[#a0a0a0] font-mono tracking-widest">
+                        {new Date(draft.savedAt).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })} に保存
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <button
+                        onClick={() => loadDraft(draft)}
+                        className="flex items-center gap-1 px-3 py-2 bg-[#5a5a5a] text-white text-[10px] font-bold tracking-widest hover:bg-[#4a4a4a] transition"
+                      >
+                        <FolderOpen size={12} strokeWidth={1.5} />
+                        読み込む
+                      </button>
+                      <button
+                        onClick={() => deleteDraft(draft.id)}
+                        className="p-2 text-[#a0a0a0] hover:text-red-500 transition-colors"
+                      >
+                        <Trash2 size={16} strokeWidth={1.5} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* 履歴タブ */}
       {activeTab === 'history' && (
@@ -521,7 +639,6 @@ export const AdminCoupon = () => {
               <span className="text-[9px] font-bold tracking-widest -rotate-90 whitespace-nowrap mt-4 font-serif">TICKET</span>
             </div>
             <div className="p-5 flex-1 border-l border-dashed border-[#7a7a7a] relative">
-              <div className="text-[10px] tracking-widest text-[#7a7a7a] font-bold mb-2 uppercase">Distribution</div>
               <h3 className="text-sm font-bold text-[#4a4a4a] mb-2 tracking-wide leading-tight">{name || 'クーポン名'}</h3>
               <p className="text-lg font-serif font-bold text-[#5a5a5a]">{previewDesc}</p>
               {hasExpiry ? (
@@ -540,7 +657,15 @@ export const AdminCoupon = () => {
           </div>
         </div>
 
-        <div className="pt-6 mt-auto">
+        <div className="pt-6 mt-auto space-y-3">
+          <button
+            type="button"
+            onClick={saveDraft}
+            className="w-full border border-[#d0d0d0] bg-white py-3 text-xs tracking-widest font-bold flex items-center justify-center space-x-2 text-[#7a7a7a] hover:bg-[#f0f0f0] transition"
+          >
+            <Save className="w-4 h-4 stroke-1" />
+            <span>下書きを保存</span>
+          </button>
           <button
             type="submit"
             disabled={loading || !isFormValid}
