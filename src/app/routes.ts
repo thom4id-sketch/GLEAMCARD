@@ -28,7 +28,7 @@ export const router = createBrowserRouter([
     path: "/admin",
     Component: AdminLayout,
     children: [
-      { index: true, Component: AdminBlog },
+      { index: true, Component: AdminScan },
       { path: "blog", Component: AdminBlog },
       { path: "coupon", Component: AdminCoupon },
       { path: "scan", Component: AdminScan },
