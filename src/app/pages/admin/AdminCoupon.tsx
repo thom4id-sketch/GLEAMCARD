@@ -99,11 +99,17 @@ export const AdminCoupon = () => {
       : `お会計から${discountValue.toLocaleString()}円引き`
     : '—';
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || typeof discountValue !== 'number') return;
     if (hasExpiry && !expiresAt) return;
+    setShowConfirm(true);
+  };
 
+  const handleConfirmDistribute = async () => {
+    setShowConfirm(false);
     setLoading(true);
     setError('');
     try {
@@ -212,6 +218,54 @@ export const AdminCoupon = () => {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* 配布確認モーダル */}
+      {showConfirm && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-end justify-center">
+          <div className="bg-[#f8f9fa] w-full max-w-sm pb-8 pt-6 px-5 shadow-lg">
+            <p className="text-[11px] font-bold text-[#5a5a5a] tracking-widest mb-5 text-center uppercase">Confirm Distribution</p>
+
+            {/* プレビュー */}
+            <div className="bg-white border border-[#7a7a7a] flex overflow-hidden relative shadow-sm mb-5">
+              <div className="absolute top-1/2 -left-2 w-4 h-4 bg-[#f8f9fa] border-r border-t border-[#7a7a7a] rotate-45 -translate-y-1/2 z-10"></div>
+              <div className="absolute top-1/2 -right-2 w-4 h-4 bg-[#f8f9fa] border-l border-b border-[#7a7a7a] rotate-45 -translate-y-1/2 z-10"></div>
+              <div className="bg-[#e2e2e2] text-[#5a5a5a] p-4 flex flex-col justify-center items-center w-16 flex-shrink-0">
+                <Ticket className="w-5 h-5 mb-1 stroke-1" />
+                <span className="text-[8px] font-bold tracking-widest -rotate-90 whitespace-nowrap mt-3 font-serif">TICKET</span>
+              </div>
+              <div className="p-4 flex-1 border-l border-dashed border-[#7a7a7a]">
+                <h3 className="text-sm font-bold text-[#4a4a4a] mb-1 tracking-wide leading-tight">{name}</h3>
+                <p className="text-base font-serif font-bold text-[#5a5a5a]">{previewDesc}</p>
+                <p className="text-[9px] text-[#a0a0a0] font-mono tracking-widest mt-2">
+                  EXP: {hasExpiry ? (expiresAt || '未設定') : '無期限'}
+                </p>
+                {usageCondition.trim() && (
+                  <p className="text-[9px] text-[#a0a0a0] font-mono tracking-widest mt-1">{usageCondition.trim()}</p>
+                )}
+              </div>
+            </div>
+
+            <p className="text-xs text-center text-[#4a4a4a] tracking-widest mb-6">
+              このクーポンを配布しますか？
+            </p>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="flex-1 border border-[#d0d0d0] bg-white py-3 text-[11px] font-bold tracking-widest text-[#7a7a7a] hover:bg-[#f0f0f0] transition"
+              >
+                いいえ
+              </button>
+              <button
+                onClick={handleConfirmDistribute}
+                className="flex-1 bg-[#5a5a5a] text-white py-3 text-[11px] font-bold tracking-widest hover:bg-[#4a4a4a] transition"
+              >
+                はい
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

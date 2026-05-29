@@ -64,18 +64,9 @@ public class PaymentService {
             }
         }
 
-        // --- 付与ポイント計算（税込み→クーポン割引→税抜き換算の順で算出）---
-        // req.amount() は税込み金額
-        int discountedTaxIncluded = req.amount();
-        if (coupon != null) {
-            if (coupon.getDiscountType() == Coupon.DiscountType.PERCENT) {
-                discountedTaxIncluded = (int) Math.floor(req.amount() * (100 - coupon.getDiscountValue()) / 100.0);
-            } else {
-                discountedTaxIncluded = Math.max(0, req.amount() - coupon.getDiscountValue());
-            }
-        }
-        // 税率10%で税抜き換算（浮動小数点誤差を避けるため整数演算）
-        int taxExcludedAmount = discountedTaxIncluded * 10 / 11;
+        // --- 付与ポイント計算（クーポン割引前の税込み金額を基準）---
+        // クーポン利用の有無によらず付与ポイントは変わらない
+        int taxExcludedAmount = req.amount() * 10 / 11;
         int pointsToGrant = (int) Math.floor(taxExcludedAmount * member.getRank().getPointRate());
 
         // --- Purchase 登録 ---
