@@ -67,7 +67,8 @@ public class PaymentService {
         // --- 付与ポイント計算（クーポン割引前の税込み金額を基準）---
         // クーポン利用の有無によらず付与ポイントは変わらない
         int taxExcludedAmount = req.amount() * 10 / 11;
-        int pointsToGrant = (int) Math.floor(taxExcludedAmount * member.getRank().getPointRate());
+        // 10の位に切り捨て（1の位は切り捨て）
+        int pointsToGrant = (int) Math.floor(taxExcludedAmount * member.getRank().getPointRate() / 10) * 10;
 
         // --- Purchase 登録 ---
         Purchase purchase = purchaseRepository.save(Purchase.builder()

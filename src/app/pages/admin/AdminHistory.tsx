@@ -126,6 +126,9 @@ export const AdminHistory = () => {
                 <div className="text-[11px] text-[#7a7a7a] tracking-widest font-mono mt-0.5">
                   No. {item.memberNo}
                 </div>
+                <div className="text-[11px] text-[#7a7a7a] tracking-widest mt-1">
+                  {item.storeName}
+                </div>
               </div>
               <div className="text-right">
                 <div className="text-lg font-bold font-mono text-[#5a5a5a] tracking-wider">

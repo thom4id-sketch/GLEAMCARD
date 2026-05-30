@@ -454,12 +454,6 @@ export const AdminCoupon = () => {
         </div>
       )}
 
-      {draftSaved && (
-        <div className="bg-white border border-[#5a5a5a] text-[#5a5a5a] p-4 flex items-center space-x-3 mb-6 text-xs font-bold tracking-wide">
-          <Save className="w-5 h-5 stroke-1" />
-          <span>下書きを保存しました</span>
-        </div>
-      )}
 
       {error && (
         <div className="border border-red-200 bg-red-50 text-red-600 p-4 mb-6 text-xs tracking-wide">
@@ -683,6 +677,12 @@ export const AdminCoupon = () => {
         </div>
 
         <div className="pt-6 mt-auto space-y-3">
+          {draftSaved && (
+            <div className="bg-white border border-[#5a5a5a] text-[#5a5a5a] p-3 flex items-center space-x-2 text-xs font-bold tracking-wide">
+              <Save className="w-4 h-4 stroke-1" />
+              <span>下書きを保存しました</span>
+            </div>
+          )}
           <button
             type="button"
             onClick={saveDraft}

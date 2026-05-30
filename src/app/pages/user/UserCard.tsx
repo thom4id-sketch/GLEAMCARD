@@ -131,7 +131,7 @@ export const UserCard = () => {
       )}
 
       {/* Points Info */}
-      <div className="w-full max-w-sm bg-[#ececec] text-[#4a4a4a] border border-[#d0d0d0] py-5 px-6 flex justify-between items-center flex-shrink-0 shadow-sm">
+      <div className="w-full max-w-sm bg-[#ececec] text-[#4a4a4a] border border-[#d0d0d0] py-3 px-6 flex justify-between items-center flex-shrink-0 shadow-sm">
         <div>
           <h3 className="text-[10px] tracking-widest opacity-80 mb-2 font-serif uppercase text-[#5a5a5a]">
             Available Points
