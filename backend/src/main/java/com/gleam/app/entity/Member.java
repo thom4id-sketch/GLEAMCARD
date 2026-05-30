@@ -50,6 +50,9 @@ public class Member {
     @Column(name = "rank_expires_at")
     private LocalDate rankExpiresAt;
 
+    @Column(name = "rank_keep_until")
+    private LocalDate rankKeepUntil;
+
     @Column(name = "last_purchase_at")
     private OffsetDateTime lastPurchaseAt;
 
@@ -82,8 +85,9 @@ public class Member {
             };
         }
 
-        /** 3年間累計購入額（税抜き）でランクを判定。Platinumは自動昇格なし。 */
+        /** 3年間累計購入額（税抜き）でランクを判定。 */
         public static Rank fromThreeYearPurchase(int taxExcludedAmount) {
+            if (taxExcludedAmount >= 1_500_000) return PLATINUM;
             if (taxExcludedAmount >= 1_000_000) return GOLD;
             if (taxExcludedAmount >= 300_000)   return SILVER;
             return REGULAR;

@@ -20,4 +20,5 @@ public class AdminMemberController {
     public ResponseEntity<MemberScanDto> getMemberByNo(@PathVariable String memberNo) {
         return ResponseEntity.ok(memberService.getByMemberNo(memberNo));
     }
+
 }

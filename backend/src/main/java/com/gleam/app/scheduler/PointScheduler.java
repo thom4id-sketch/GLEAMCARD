@@ -6,13 +6,13 @@ import com.gleam.app.entity.ScheduledPointGrant;
 import com.gleam.app.repository.MemberRepository;
 import com.gleam.app.repository.PointHistoryRepository;
 import com.gleam.app.repository.ScheduledPointGrantRepository;
+import com.gleam.app.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
 
@@ -24,6 +24,7 @@ public class PointScheduler {
     private final ScheduledPointGrantRepository grantRepository;
     private final PointHistoryRepository pointHistoryRepository;
     private final MemberRepository memberRepository;
+    private final MemberService memberService;
 
     /** 毎時0分：ポイント付与スケジュール実行 */
     @Scheduled(cron = "0 0 * * * *")
@@ -55,14 +56,26 @@ public class PointScheduler {
         }
     }
 
-    /** 毎日00:05：ポイント失効チェック（最終購入から3年経過） */
+    /**
+     * 毎日00:05：ポイント失効チェック。
+     * 通常会員は最終購入から3年、Platinum は4年で失効。
+     */
     @Scheduled(cron = "0 5 0 * * *")
     @Transactional
     public void checkPointExpiry() {
-        OffsetDateTime oneYearAgo = OffsetDateTime.now().minusYears(3);
-        List<Member> expired = memberRepository.findMembersWithExpiredPoints(oneYearAgo);
+        OffsetDateTime now = OffsetDateTime.now();
+        // 通常3年失効（Platinum以外）
+        List<Member> expiredNormal = memberRepository.findMembersWithExpiredPoints(now.minusYears(3))
+            .stream()
+            .filter(m -> m.getRank() != Member.Rank.PLATINUM)
+            .toList();
+        // Platinum は4年失効
+        List<Member> expiredPlatinum = memberRepository.findMembersWithExpiredPoints(now.minusYears(4))
+            .stream()
+            .filter(m -> m.getRank() == Member.Rank.PLATINUM)
+            .toList();
 
-        for (Member member : expired) {
+        for (Member member : java.util.stream.Stream.concat(expiredNormal.stream(), expiredPlatinum.stream()).toList()) {
             int expiredPoints = member.getPoints();
             if (expiredPoints <= 0) continue;
 
@@ -70,7 +83,7 @@ public class PointScheduler {
                 .member(member)
                 .amount(expiredPoints)
                 .transactionType(PointHistory.TransactionType.EXPIRE)
-                .description("ポイント失効（最終購入から3年経過）")
+                .description("ポイント失効（有効期限超過）")
                 .build());
 
             member.setPoints(0);
@@ -79,27 +92,9 @@ public class PointScheduler {
         }
     }
 
-    /** 毎年1/1 00:10：会員ランクリセット */
-    @Scheduled(cron = "0 10 0 1 1 *")
-    @Transactional
+    /** 毎年1/1 00:10：会員ランクリセット（ランクキープ適用） */
+    @Scheduled(cron = "0 10 0 1 1 *", zone = "Asia/Tokyo")
     public void resetAnnualRank() {
-        LocalDate today = LocalDate.now();
-
-        // rankExpiresAt が今日以前の会員を REGULAR にリセット
-        List<Member> members = memberRepository.findAll().stream()
-            .filter(m -> m.getRank() != Member.Rank.REGULAR)
-            .filter(m -> m.getRankExpiresAt() == null || !m.getRankExpiresAt().isAfter(today))
-            .toList();
-
-        for (Member member : members) {
-            Member.Rank prevRank = member.getRank();
-            member.setRank(Member.Rank.REGULAR);
-            member.setAnnualPurchaseAmount(0);
-            member.setRankExpiresAt(null);
-            memberRepository.save(member);
-            log.info("Reset rank {} -> REGULAR for member {}", prevRank, member.getMemberNo());
-        }
-
-        log.info("Annual rank reset: {} member(s) affected", members.size());
+        memberService.runAnnualRankReset();
     }
 }

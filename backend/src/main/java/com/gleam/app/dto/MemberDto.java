@@ -16,8 +16,9 @@ public record MemberDto(
     LocalDate pointExpiresAt
 ) {
     public static MemberDto from(Member member) {
+        int expiryYears = member.getRank() == Member.Rank.PLATINUM ? 4 : 3;
         LocalDate pointExpiresAt = member.getLastPurchaseAt() != null
-            ? member.getLastPurchaseAt().toLocalDate().plusYears(3)
+            ? member.getLastPurchaseAt().toLocalDate().plusYears(expiryYears)
             : null;
         return new MemberDto(
             member.getId(),

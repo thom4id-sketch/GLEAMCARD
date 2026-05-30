@@ -130,8 +130,11 @@ public class PaymentService {
         boolean rankChanged = newRank.ordinal() > oldRank.ordinal();
         if (rankChanged) {
             member.setRank(newRank);
-            // ランク有効期限 = 当年12月31日（3年ウィンドウなので当年末まで）
             member.setRankExpiresAt(LocalDate.of(currentYear, 12, 31));
+            // Platinum 昇格時はランクキープ期限を翌年末に設定
+            if (newRank == Member.Rank.PLATINUM) {
+                member.setRankKeepUntil(LocalDate.of(currentYear + 1, 12, 31));
+            }
         }
 
         memberRepository.save(member);

@@ -111,6 +111,8 @@ export const AdminCoupon = () => {
     try { return JSON.parse(localStorage.getItem(DRAFT_STORAGE_KEY) ?? '[]'); } catch { return []; }
   });
 
+  const [draftSaved, setDraftSaved] = useState(false);
+
   const saveDraft = () => {
     const existing = drafts.find(d => d.name === name);
     const draft: CouponDraft = {
@@ -124,6 +126,8 @@ export const AdminCoupon = () => {
       : [draft, ...drafts];
     setDrafts(next);
     localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(next));
+    setDraftSaved(true);
+    setTimeout(() => setDraftSaved(false), 2500);
   };
 
   const loadDraft = (draft: CouponDraft) => {
@@ -447,6 +451,13 @@ export const AdminCoupon = () => {
         <div className="bg-white border border-[#5a5a5a] text-[#5a5a5a] p-4 flex items-center space-x-3 mb-6 text-xs font-bold tracking-wide">
           <CheckCircle className="w-5 h-5 stroke-1" />
           <span>{distributedCount}名の会員へ配布が完了しました</span>
+        </div>
+      )}
+
+      {draftSaved && (
+        <div className="bg-white border border-[#5a5a5a] text-[#5a5a5a] p-4 flex items-center space-x-3 mb-6 text-xs font-bold tracking-wide">
+          <Save className="w-5 h-5 stroke-1" />
+          <span>下書きを保存しました</span>
         </div>
       )}
 
