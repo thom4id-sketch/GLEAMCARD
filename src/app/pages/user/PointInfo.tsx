@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { ArrowLeft, Award, Info, Ticket, ArrowLeftRight, Truck, PackageSearch, Shield, Mail, Clock } from 'lucide-react';
+import { ArrowLeft, Info, Ticket, ArrowLeftRight, Truck, PackageSearch, Shield, Mail, Clock } from 'lucide-react';
 
 const O = () => <span className="text-[#4a4a4a] font-bold text-sm">○</span>;
 const Dash = () => <span className="text-[#c0c0c0] text-sm">—</span>;
@@ -39,63 +39,6 @@ export const PointInfo = () => {
             <li>ポイントの有効期限は、最終お買い上げ日から3年間となります。</li>
             <li>ショッピングローンをご利用の際は、ポイントの付与はございません。</li>
           </ul>
-        </section>
-
-        {/* ランクシステム */}
-        <section className="bg-white border-l-2 border-[#a0a0a0] pl-5 p-4 shadow-sm">
-          <div className="flex items-center space-x-3 mb-5">
-            <Award className="text-[#5a5a5a]" size={18} strokeWidth={1.5} />
-            <h3 className="text-[11px] font-bold text-[#5a5a5a] tracking-widest uppercase">Membership Rank</h3>
-          </div>
-          <div className="text-xs text-[#7a7a7a] mb-6 space-y-4 leading-relaxed">
-            <p>
-              直近3年間のお買い上げ累計金額（税抜き）に応じてランクアップし、ポイント付与率が上昇します。
-            </p>
-            <ul className="list-disc pl-4 space-y-3">
-              <li>集計期間は<strong className="text-[#4a4a4a]">当年を含む過去3年間（1月1日〜12月31日）</strong>が対象となります。</li>
-              <li>購入額の条件を満たした場合、<strong className="text-[#4a4a4a]">即時ランクアップ</strong>となり、新しいランクの付与率は<strong className="text-[#4a4a4a]">次の決済から有効</strong>となります。</li>
-              <li>
-                <div className="bg-[#f8f9fa] p-4 border border-[#d0d0d0] mt-3 mb-2 font-mono text-[10px] leading-relaxed text-[#5a5a5a]">
-                  <strong className="text-[#4a4a4a]">【EX】</strong> 2026年の集計対象期間<br/><br/>
-                  　2024年1月1日 〜 2026年12月31日<br/><br/>
-                  2027年になると対象期間が切り替わります。<br/>
-                  　2025年1月1日 〜 2027年12月31日
-                </div>
-              </li>
-            </ul>
-          </div>
-
-          <p className="text-[10px] text-[#a0a0a0] mb-4 tracking-widest">※購入額は税抜き金額が基準です</p>
-          <div className="space-y-4">
-            <div className="border border-[#c0c0c0] p-4 flex justify-between items-center bg-[#4a4a4a] text-white">
-              <div>
-                <span className="font-serif tracking-widest text-sm uppercase">Regular</span>
-                <p className="text-[9px] mt-1 font-mono tracking-widest text-[#d0d0d0]">BASIC RANK</p>
-              </div>
-              <span className="text-[10px] border border-white/40 px-3 py-1 font-mono tracking-widest">5%</span>
-            </div>
-            <div className="border border-[#a0a0a0] p-4 flex justify-between items-center bg-gradient-to-br from-[#7a7a7a] to-[#b0b0b0] text-white">
-              <div>
-                <span className="font-serif tracking-widest text-sm uppercase">Silver</span>
-                <p className="text-[9px] mt-1 font-mono tracking-widest text-[#e8e8e8]">OVER ¥300,000</p>
-              </div>
-              <span className="text-[10px] border border-white/50 px-3 py-1 font-mono tracking-widest">8%</span>
-            </div>
-            <div className="border border-[#c2a76f] p-4 flex justify-between items-center bg-[#b89b5e] text-white">
-              <div>
-                <span className="font-serif tracking-widest text-sm uppercase">Gold</span>
-                <p className="text-[9px] mt-1 font-mono tracking-widest text-[#f0e6d2]">OVER ¥1,000,000</p>
-              </div>
-              <span className="text-[10px] border border-white/40 px-3 py-1 font-mono tracking-widest">10%</span>
-            </div>
-            <div className="border border-[#c0c4cc] p-4 flex justify-between items-center bg-gradient-to-br from-[#f4f5f7] to-[#cdd1d8] text-[#2c3036]">
-              <div>
-                <span className="font-serif tracking-widest text-sm uppercase font-bold">Platinum</span>
-                <p className="text-[9px] mt-1 font-mono tracking-widest text-[#5a5f68]">COMING SOON</p>
-              </div>
-              <span className="text-[10px] border border-[#a0a6b2] px-3 py-1 font-mono tracking-widest font-bold">10%</span>
-            </div>
-          </div>
         </section>
 
         {/* ランク別サービス比較表 */}
