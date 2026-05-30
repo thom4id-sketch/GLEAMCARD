@@ -15,6 +15,7 @@ export interface User {
   rank: Rank;
   points: number;
   annualPurchase: number;
+  pointExpiresAt?: string;
 }
 
 export interface Post {
@@ -113,6 +114,7 @@ function memberToUser(m: MemberDto): User {
     rank: rankFromStr(m.rank),
     points: m.points,
     annualPurchase: m.annualPurchaseAmount,
+    pointExpiresAt: m.pointExpiresAt ?? undefined,
   };
 }
 

@@ -12,6 +12,7 @@ export interface MemberDto {
   points: number;
   annualPurchaseAmount: number;
   rankExpiresAt: string | null;
+  pointExpiresAt: string | null;
 }
 
 interface AuthResponse {
@@ -44,6 +45,7 @@ const MOCK_USER: MemberDto = {
   points: 1200,
   annualPurchaseAmount: 65000,
   rankExpiresAt: null,
+  pointExpiresAt: null,
 };
 // ────────────────────────────────────────────────────────
 

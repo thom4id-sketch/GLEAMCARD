@@ -25,22 +25,6 @@ export const PointInfo = () => {
       </div>
 
       <div className="p-5 space-y-8 mt-2">
-        {/* ポイント概要 */}
-        <section className="bg-white border-l-2 border-[#a0a0a0] pl-5 p-4 shadow-sm">
-          <div className="flex items-center space-x-3 mb-5">
-            <Info className="text-[#5a5a5a]" size={18} strokeWidth={1.5} />
-            <h3 className="text-[11px] font-bold text-[#5a5a5a] tracking-widest uppercase">Point Rules</h3>
-          </div>
-          <ul className="text-xs text-[#7a7a7a] space-y-4 list-disc pl-4 leading-relaxed">
-            <li>お買い上げ金額と現在の会員ランクの付与率に応じてポイントが貯まります。</li>
-            <li>商品ご購入時に、店舗スタッフがポイントの付与処理を行います。</li>
-            <li><strong className="text-[#4a4a4a]">ポイントが付与されるのはご購入の3日後（72時間後）</strong>となります。</li>
-            <li>貯まったポイントは、次回以降のお買い物で「1ポイント＝1円」としてご利用いただけます。</li>
-            <li>ポイントの有効期限は、最終お買い上げ日から3年間となります。</li>
-            <li>ショッピングローンをご利用の際は、ポイントの付与はございません。</li>
-          </ul>
-        </section>
-
         {/* ランク別サービス比較表 */}
         <section className="bg-white shadow-sm overflow-hidden">
           <div className="text-center py-8 px-4 border-b border-[#e8e8e8]">
@@ -124,6 +108,22 @@ export const PointInfo = () => {
               <p key={i} className="text-[9px] text-[#a0a0a0] leading-relaxed">※ {note}</p>
             ))}
           </div>
+        </section>
+
+        {/* ポイント概要 */}
+        <section className="bg-white border-l-2 border-[#a0a0a0] pl-5 p-4 shadow-sm">
+          <div className="flex items-center space-x-3 mb-5">
+            <Info className="text-[#5a5a5a]" size={18} strokeWidth={1.5} />
+            <h3 className="text-[11px] font-bold text-[#5a5a5a] tracking-widest uppercase">Point Rules</h3>
+          </div>
+          <ul className="text-xs text-[#7a7a7a] space-y-4 list-disc pl-4 leading-relaxed">
+            <li>お買い上げ金額と現在の会員ランクの付与率に応じてポイントが貯まります。</li>
+            <li>商品ご購入時に、店舗スタッフがポイントの付与処理を行います。</li>
+            <li><strong className="text-[#4a4a4a]">ポイントが付与されるのはご購入の3日後（72時間後）</strong>となります。</li>
+            <li>貯まったポイントは、次回以降のお買い物で「1ポイント＝1円」としてご利用いただけます。</li>
+            <li>ポイントの有効期限は、最終お買い上げ日から3年間となります。</li>
+            <li>ショッピングローンをご利用の際は、ポイントの付与はございません。</li>
+          </ul>
         </section>
 
         {/* クーポンについて */}

@@ -12,9 +12,13 @@ public record MemberDto(
     double pointRate,
     int points,
     int annualPurchaseAmount,
-    LocalDate rankExpiresAt
+    LocalDate rankExpiresAt,
+    LocalDate pointExpiresAt
 ) {
     public static MemberDto from(Member member) {
+        LocalDate pointExpiresAt = member.getLastPurchaseAt() != null
+            ? member.getLastPurchaseAt().toLocalDate().plusYears(3)
+            : null;
         return new MemberDto(
             member.getId(),
             member.getMemberNo(),
@@ -23,7 +27,8 @@ public record MemberDto(
             member.getRank().getPointRate(),
             member.getPoints(),
             member.getAnnualPurchaseAmount(),
-            member.getRankExpiresAt()
+            member.getRankExpiresAt(),
+            pointExpiresAt
         );
     }
 }

@@ -87,15 +87,10 @@ export const UserCard = () => {
         <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-[#a0a0a0] -ml-[1px] -mb-[1px]"></div>
         <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-[#a0a0a0] -mr-[1px] -mb-[1px]"></div>
 
-        <p className="text-[10px] tracking-widest text-[#5a5a5a] mb-5 font-bold font-serif">
-          SCAN AT REGISTER
-        </p>
+
         <div className="bg-white p-1">
           <QRCode value={currentUser.memberNo} size={160} fgColor="#333333" />
         </div>
-        <p className="mt-4 text-[11px] text-[#7a7a7a] font-mono tracking-widest">
-          {currentUser.memberNo}
-        </p>
         <div className="mt-3 flex items-center space-x-1 text-[#a0a0a0]">
           <ZoomIn size={12} strokeWidth={1} />
           <span className="text-[10px] tracking-widest">タップして拡大</span>
@@ -141,6 +136,11 @@ export const UserCard = () => {
           <h3 className="text-[10px] tracking-widest opacity-80 mb-2 font-serif uppercase text-[#5a5a5a]">
             Available Points
           </h3>
+          {currentUser.pointExpiresAt && (
+            <p className="text-[9px] text-[#7a7a7a] font-mono tracking-widest mb-1">
+              有効期限: {currentUser.pointExpiresAt.replace(/-/g, '/')}
+            </p>
+          )}
           <Link
             to="/point-info"
             className="text-[10px] underline decoration-[#a0a0a0] underline-offset-4 hover:text-[#7a7a7a] transition-colors"
