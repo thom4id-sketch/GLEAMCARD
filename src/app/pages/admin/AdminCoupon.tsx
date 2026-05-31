@@ -69,6 +69,31 @@ export const AdminCoupon = () => {
   const [ageMax, setAgeMax] = useState<number | ''>('');
   const [targetHasPurchase, setTargetHasPurchase] = useState(false);
 
+  // ── 対象者数プレビュー ──
+  const [targetCount, setTargetCount] = useState<number | null>(null);
+  const [targetCountLoading, setTargetCountLoading] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      setTargetCountLoading(true);
+      try {
+        const res = await api.post<{ count: number }>('/api/admin/coupons/target-count', {
+          targetRanks: targetRanks.length > 0 ? targetRanks : undefined,
+          targetGenders: targetGenders.length > 0 ? targetGenders : undefined,
+          targetAgeMin: typeof ageMin === 'number' ? ageMin : undefined,
+          targetAgeMax: typeof ageMax === 'number' ? ageMax : undefined,
+          targetHasPurchase: targetHasPurchase || undefined,
+        });
+        setTargetCount(res.count);
+      } catch {
+        setTargetCount(null);
+      } finally {
+        setTargetCountLoading(false);
+      }
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [targetRanks, targetGenders, ageMin, ageMax, targetHasPurchase]);
+
   // ── 履歴タブ ──
   const [history, setHistory] = useState<CouponGroup[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -644,6 +669,13 @@ export const AdminCoupon = () => {
               className="w-20 border border-[#d0d0d0] bg-white px-3 py-2 text-sm text-center focus:outline-none focus:border-[#5a5a5a] text-[#4a4a4a] font-mono"
             />
             <span className="text-[10px] text-[#7a7a7a] tracking-widest">歳</span>
+          </div>
+
+          <div className="mt-4 pt-4 border-t border-[#e8e8e8] flex items-center justify-between">
+            <span className="text-[10px] text-[#7a7a7a] tracking-widest">対象会員数</span>
+            <span className="text-sm font-bold font-mono text-[#4a4a4a]">
+              {targetCountLoading ? '…' : targetCount !== null ? `${targetCount.toLocaleString()} 名` : '—'}
+            </span>
           </div>
         </div>
 

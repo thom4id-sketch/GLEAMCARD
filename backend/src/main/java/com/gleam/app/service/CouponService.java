@@ -2,6 +2,7 @@ package com.gleam.app.service;
 
 import com.gleam.app.dto.coupon.CouponGroupDto;
 import com.gleam.app.dto.coupon.DistributeCouponRequest;
+import com.gleam.app.dto.coupon.TargetCountRequest;
 import com.gleam.app.entity.Coupon;
 import com.gleam.app.entity.FriendInvitation;
 import com.gleam.app.entity.Member;
@@ -36,20 +37,9 @@ public class CouponService {
         Coupon.DiscountType discountType = parseDiscountType(req.discountType());
         String discountDesc = buildDiscountDesc(discountType, req.discountValue());
 
-        LocalDate today = LocalDate.now();
-        Set<String> ranks   = (req.targetRanks()   != null && !req.targetRanks().isEmpty())   ? Set.copyOf(req.targetRanks())   : null;
-        Set<String> genders = (req.targetGenders()  != null && !req.targetGenders().isEmpty())  ? Set.copyOf(req.targetGenders())  : null;
-        Set<Long> purchasedIds = Boolean.TRUE.equals(req.targetHasPurchase())
-            ? purchaseRepository.findMemberIdsWithCompletedPurchase()
-            : null;
-
-        List<Member> allMembers = memberRepository.findAll().stream()
-            .filter(m -> ranks == null || ranks.contains(m.getRank().name()))
-            .filter(m -> genders == null || (m.getGender() != null && genders.contains(m.getGender())))
-            .filter(m -> req.targetAgeMin() == null || (m.getBirthday() != null && calcAge(m.getBirthday(), today) >= req.targetAgeMin()))
-            .filter(m -> req.targetAgeMax() == null || (m.getBirthday() != null && calcAge(m.getBirthday(), today) <= req.targetAgeMax()))
-            .filter(m -> purchasedIds == null || purchasedIds.contains(m.getId()))
-            .toList();
+        List<Member> allMembers = filterMembers(
+            req.targetRanks(), req.targetGenders(),
+            req.targetAgeMin(), req.targetAgeMax(), req.targetHasPurchase());
 
         List<Coupon> coupons = allMembers.stream()
             .map(member -> Coupon.builder()
@@ -140,6 +130,32 @@ public class CouponService {
         // purchases.coupon_id の参照をNULLにしてから削除（外部キー制約回避）
         purchaseRepository.nullifyCouponReferencesByName(name);
         couponRepository.deleteByCouponName(name);
+    }
+
+    /** ターゲット条件に合致する会員数を返す（配布前プレビュー用）。 */
+    @Transactional(readOnly = true)
+    public int countTargetMembers(TargetCountRequest req) {
+        return filterMembers(
+            req.targetRanks(), req.targetGenders(),
+            req.targetAgeMin(), req.targetAgeMax(), req.targetHasPurchase()).size();
+    }
+
+    private List<Member> filterMembers(
+            List<String> targetRanks, List<String> targetGenders,
+            Integer targetAgeMin, Integer targetAgeMax, Boolean targetHasPurchase) {
+        LocalDate today = LocalDate.now();
+        Set<String> ranks   = (targetRanks   != null && !targetRanks.isEmpty())   ? Set.copyOf(targetRanks)   : null;
+        Set<String> genders = (targetGenders != null && !targetGenders.isEmpty())  ? Set.copyOf(targetGenders) : null;
+        Set<Long> purchasedIds = Boolean.TRUE.equals(targetHasPurchase)
+            ? purchaseRepository.findMemberIdsWithCompletedPurchase()
+            : null;
+        return memberRepository.findAll().stream()
+            .filter(m -> ranks == null || ranks.contains(m.getRank().name()))
+            .filter(m -> genders == null || (m.getGender() != null && genders.contains(m.getGender())))
+            .filter(m -> targetAgeMin == null || (m.getBirthday() != null && calcAge(m.getBirthday(), today) >= targetAgeMin))
+            .filter(m -> targetAgeMax == null || (m.getBirthday() != null && calcAge(m.getBirthday(), today) <= targetAgeMax))
+            .filter(m -> purchasedIds == null || purchasedIds.contains(m.getId()))
+            .toList();
     }
 
     private int calcAge(LocalDate birthday, LocalDate today) {

@@ -14,11 +14,27 @@ export const RegisterPage = () => {
   const hasInvitation = new URLSearchParams(window.location.search).has('inv');
 
   const isHiragana = (str: string) => /^[ぁ-ゖー\s　]+$/.test(str);
+  const hasFullWidthSpace = (str: string) => str.includes('　');
 
-  const isFormValid = name.trim() && nameKana.trim() && isHiragana(nameKana.trim()) && birthday && gender;
+  const handleBirthdayChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 8);
+    let formatted = digits;
+    if (digits.length > 6) {
+      formatted = `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6)}`;
+    } else if (digits.length > 4) {
+      formatted = `${digits.slice(0, 4)}-${digits.slice(4)}`;
+    }
+    setBirthday(formatted);
+  };
+
+  const isFormValid = name.trim() && hasFullWidthSpace(name) && nameKana.trim() && isHiragana(nameKana.trim()) && birthday && gender;
 
   const handleRegister = async () => {
     if (!isFormValid) return;
+    if (!hasFullWidthSpace(name)) {
+      setError('氏名は姓と名の間に全角スペースを入れてください');
+      return;
+    }
     if (!isHiragana(nameKana.trim())) {
       setError('ふりがなはひらがなで入力してください');
       return;
@@ -80,8 +96,17 @@ export const RegisterPage = () => {
                 value={name}
                 onChange={e => setName(e.target.value)}
                 placeholder="例: 山田　太郎"
-                className="w-full border border-[#d0d0d0] bg-white px-3 py-3 text-sm focus:outline-none focus:border-[#5a5a5a] text-[#4a4a4a] transition-colors"
+                className={`w-full border bg-white px-3 py-3 text-sm focus:outline-none text-[#4a4a4a] transition-colors ${
+                  name && !hasFullWidthSpace(name)
+                    ? 'border-red-300 focus:border-red-400'
+                    : 'border-[#d0d0d0] focus:border-[#5a5a5a]'
+                }`}
               />
+              {name && !hasFullWidthSpace(name) ? (
+                <p className="text-[10px] text-red-500 mt-1 tracking-wide">姓と名の間に全角スペースを入れてください</p>
+              ) : (
+                <p className="text-[10px] text-[#a0a0a0] mt-1 tracking-wide">姓と名の間に全角スペースを入れてください</p>
+              )}
             </div>
             <div>
               <label className="block text-[11px] font-bold text-[#7a7a7a] tracking-widest mb-2">
@@ -108,10 +133,11 @@ export const RegisterPage = () => {
                 生年月日 <span className="text-red-500">*</span>
               </label>
               <input
-                type="date"
+                type="text"
+                inputMode="numeric"
+                placeholder="例: 19900101"
                 value={birthday}
-                onChange={e => setBirthday(e.target.value)}
-                max={new Date().toISOString().slice(0, 10)}
+                onChange={handleBirthdayChange}
                 className="w-full border border-[#d0d0d0] bg-white px-3 py-3 text-sm focus:outline-none focus:border-[#5a5a5a] text-[#4a4a4a] font-mono transition-colors"
               />
             </div>

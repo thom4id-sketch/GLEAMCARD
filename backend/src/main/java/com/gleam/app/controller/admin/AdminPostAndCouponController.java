@@ -2,6 +2,7 @@ package com.gleam.app.controller.admin;
 
 import com.gleam.app.dto.coupon.CouponGroupDto;
 import com.gleam.app.dto.coupon.DistributeCouponRequest;
+import com.gleam.app.dto.coupon.TargetCountRequest;
 import com.gleam.app.dto.post.PostDto;
 import com.gleam.app.service.CouponService;
 import com.gleam.app.service.PostService;
@@ -58,6 +59,14 @@ public class AdminPostAndCouponController {
             @Valid @RequestBody DistributeCouponRequest request) {
         int count = couponService.distributeCoupon(request);
         return ResponseEntity.ok(Map.of("distributed", count));
+    }
+
+    /** POST /api/admin/coupons/target-count — ターゲット条件に合致する会員数を返す */
+    @PostMapping("/coupons/target-count")
+    public ResponseEntity<Map<String, Integer>> getTargetCount(
+            @RequestBody TargetCountRequest request) {
+        int count = couponService.countTargetMembers(request);
+        return ResponseEntity.ok(Map.of("count", count));
     }
 
     /** GET /api/admin/coupons/history — 配布済みクーポン一覧（クーポン名ごとに集計） */
