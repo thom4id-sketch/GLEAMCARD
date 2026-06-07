@@ -19,5 +19,6 @@ public record DistributeCouponRequest(
     Integer targetAgeMin,           // 以上
     Integer targetAgeMax,           // 以下
     Boolean targetHasPurchase,      // true: キャンセルなし購入履歴が1件以上ある会員のみ
+    Integer targetBirthMonth,       // 1〜12: 指定月生まれの会員のみ
     @jakarta.validation.constraints.Size(max = 15) String usageCondition  // 任意・15文字以内
 ) {}

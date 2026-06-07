@@ -27,6 +27,10 @@ public class Post {
     @Column(name = "link_url", length = 500)
     private String linkUrl;
 
+    @Column(name = "is_pinned", nullable = false)
+    @Builder.Default
+    private Boolean isPinned = false;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "posted_by")
     private Member postedBy;

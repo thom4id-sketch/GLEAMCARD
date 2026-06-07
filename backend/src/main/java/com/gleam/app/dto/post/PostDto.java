@@ -9,7 +9,8 @@ public record PostDto(
     String title,
     String imageData,   // data:{contentType};base64,{base64} 形式
     String linkUrl,
-    OffsetDateTime createdAt
+    OffsetDateTime createdAt,
+    boolean isPinned
 ) {
     public static PostDto from(Post post) {
         return new PostDto(
@@ -17,7 +18,8 @@ public record PostDto(
             post.getTitle(),
             "data:" + post.getImageContentType() + ";base64," + post.getImageData(),
             post.getLinkUrl(),
-            post.getCreatedAt()
+            post.getCreatedAt(),
+            Boolean.TRUE.equals(post.getIsPinned())
         );
     }
 }

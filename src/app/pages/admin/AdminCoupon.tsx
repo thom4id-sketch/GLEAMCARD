@@ -68,6 +68,7 @@ export const AdminCoupon = () => {
   const [ageMin, setAgeMin] = useState<number | ''>('');
   const [ageMax, setAgeMax] = useState<number | ''>('');
   const [targetHasPurchase, setTargetHasPurchase] = useState(false);
+  const [targetBirthMonth, setTargetBirthMonth] = useState<number | null>(null);
 
   // ── 対象者数プレビュー ──
   const [targetCount, setTargetCount] = useState<number | null>(null);
@@ -83,6 +84,7 @@ export const AdminCoupon = () => {
           targetAgeMin: typeof ageMin === 'number' ? ageMin : undefined,
           targetAgeMax: typeof ageMax === 'number' ? ageMax : undefined,
           targetHasPurchase: targetHasPurchase || undefined,
+          targetBirthMonth: targetBirthMonth ?? undefined,
         });
         setTargetCount(res.count);
       } catch {
@@ -92,7 +94,7 @@ export const AdminCoupon = () => {
       }
     }, 400);
     return () => clearTimeout(timer);
-  }, [targetRanks, targetGenders, ageMin, ageMax, targetHasPurchase]);
+  }, [targetRanks, targetGenders, ageMin, ageMax, targetHasPurchase, targetBirthMonth]);
 
   // ── 履歴タブ ──
   const [history, setHistory] = useState<CouponGroup[]>([]);
@@ -222,6 +224,7 @@ export const AdminCoupon = () => {
         targetAgeMin: typeof ageMin === 'number' ? ageMin : undefined,
         targetAgeMax: typeof ageMax === 'number' ? ageMax : undefined,
         targetHasPurchase: targetHasPurchase || undefined,
+        targetBirthMonth: targetBirthMonth ?? undefined,
         usageCondition: usageCondition.trim() || undefined,
       });
 
@@ -237,6 +240,7 @@ export const AdminCoupon = () => {
       setAgeMin('');
       setAgeMax('');
       setTargetHasPurchase(false);
+      setTargetBirthMonth(null);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 4000);
     } catch (err) {
@@ -646,6 +650,25 @@ export const AdminCoupon = () => {
             ))}
           </div>
 
+          {/* 誕生月 */}
+          <p className="text-[10px] text-[#7a7a7a] tracking-widest mb-2">誕生月</p>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {[1,2,3,4,5,6,7,8,9,10,11,12].map(m => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setTargetBirthMonth(prev => prev === m ? null : m)}
+                className={`px-3 py-2 text-[10px] font-bold tracking-widest border transition-colors ${
+                  targetBirthMonth === m
+                    ? 'bg-[#5a5a5a] text-white border-[#5a5a5a]'
+                    : 'bg-white text-[#7a7a7a] border-[#d0d0d0] hover:bg-[#f0f0f0]'
+                }`}
+              >
+                {m}月
+              </button>
+            ))}
+          </div>
+
           {/* 年齢 */}
           <p className="text-[10px] text-[#7a7a7a] tracking-widest mb-2">年齢</p>
           <div className="flex items-center gap-2">
@@ -732,7 +755,7 @@ export const AdminCoupon = () => {
             <span>
               {loading
                 ? '配布中...'
-                : (targetRanks.length || targetGenders.length || typeof ageMin === 'number' || typeof ageMax === 'number' || targetHasPurchase)
+                : (targetRanks.length || targetGenders.length || typeof ageMin === 'number' || typeof ageMax === 'number' || targetHasPurchase || targetBirthMonth)
                   ? '対象会員に配布する'
                   : '全会員に配布する'}
             </span>

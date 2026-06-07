@@ -36,6 +36,12 @@ public class AdminPostAndCouponController {
         return ResponseEntity.ok(postService.createPost(memberId, title, linkUrl, image));
     }
 
+    /** PATCH /api/admin/posts/{id}/pin — ピン留めのトグル */
+    @org.springframework.web.bind.annotation.PatchMapping("/posts/{id}/pin")
+    public ResponseEntity<com.gleam.app.dto.post.PostDto> togglePin(@PathVariable Long id) {
+        return ResponseEntity.ok(postService.togglePin(id));
+    }
+
     /** PUT /api/admin/posts/{id} — ブログ編集（タイトル・URL・画像を更新） */
     @PutMapping("/posts/{id}")
     public ResponseEntity<PostDto> updatePost(

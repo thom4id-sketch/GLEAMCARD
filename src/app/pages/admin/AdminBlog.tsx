@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, CheckCircle, Upload, Pencil, Trash2, X } from 'lucide-react';
+import { Send, CheckCircle, Upload, Pencil, Trash2, X, Pin, PinOff } from 'lucide-react';
 import { api } from '../../lib/api';
 
 interface PostItem {
@@ -8,6 +8,7 @@ interface PostItem {
   imageData: string;
   linkUrl: string | null;
   createdAt: string;
+  isPinned: boolean;
 }
 
 export const AdminBlog = () => {
@@ -94,6 +95,18 @@ export const AdminBlog = () => {
       setError(err instanceof Error ? err.message : '操作に失敗しました');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleTogglePin = async (post: PostItem) => {
+    try {
+      const updated = await api.patch<PostItem>(`/api/admin/posts/${post.id}/pin`);
+      setPosts(prev =>
+        [...prev.map(p => p.id === post.id ? { ...p, isPinned: updated.isPinned } : p)]
+          .sort((a, b) => Number(b.isPinned) - Number(a.isPinned))
+      );
+    } catch {
+      setError('ピン留めの変更に失敗しました');
     }
   };
 
@@ -199,10 +212,24 @@ export const AdminBlog = () => {
       ) : (
         <div className="flex flex-col space-y-3">
           {posts.map(post => (
-            <div key={post.id} className="bg-white border border-[#e0e0e0] flex items-center space-x-3 p-3">
-              <img src={post.imageData} alt={post.title} className="w-16 h-12 object-cover flex-shrink-0 border border-[#e0e0e0]" />
+            <div key={post.id} className={`bg-white border flex items-center space-x-3 p-3 ${post.isPinned ? 'border-[#5a5a5a]' : 'border-[#e0e0e0]'}`}>
+              <div className="relative flex-shrink-0">
+                <img src={post.imageData} alt={post.title} className="w-16 h-12 object-cover border border-[#e0e0e0]" />
+                {post.isPinned && (
+                  <span className="absolute -top-1.5 -right-1.5 bg-[#5a5a5a] rounded-full p-0.5">
+                    <Pin className="w-2.5 h-2.5 text-white" />
+                  </span>
+                )}
+              </div>
               <p className="flex-1 text-xs text-[#4a4a4a] line-clamp-2">{post.title}</p>
-              <div className="flex space-x-2 flex-shrink-0">
+              <div className="flex space-x-1 flex-shrink-0">
+                <button
+                  onClick={() => handleTogglePin(post)}
+                  title={post.isPinned ? 'ピン留め解除' : 'ピン留め'}
+                  className={`p-2 transition ${post.isPinned ? 'text-[#5a5a5a]' : 'text-[#c0c0c0] hover:text-[#5a5a5a]'}`}
+                >
+                  {post.isPinned ? <Pin className="w-4 h-4 stroke-1" /> : <PinOff className="w-4 h-4 stroke-1" />}
+                </button>
                 <button onClick={() => startEdit(post)} className="p-2 text-[#7a7a7a] hover:text-[#4a4a4a] transition">
                   <Pencil className="w-4 h-4 stroke-1" />
                 </button>

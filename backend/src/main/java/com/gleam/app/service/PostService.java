@@ -37,8 +37,15 @@ public class PostService {
     @Transactional(readOnly = true)
     public Page<PostDto> getPosts(int page, int size) {
         return postRepository
-            .findAllByOrderByCreatedAtDesc(PageRequest.of(page, size))
+            .findAllByOrderByIsPinnedDescCreatedAtDesc(PageRequest.of(page, size))
             .map(PostDto::from);
+    }
+
+    public PostDto togglePin(Long postId) {
+        Post post = postRepository.findById(postId)
+            .orElseThrow(() -> new IllegalArgumentException("Post not found: " + postId));
+        post.setIsPinned(!Boolean.TRUE.equals(post.getIsPinned()));
+        return PostDto.from(postRepository.save(post));
     }
 
     public PostDto createPost(Long memberId, String title, String linkUrl, MultipartFile image) {

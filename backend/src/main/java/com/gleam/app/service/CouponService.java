@@ -39,7 +39,8 @@ public class CouponService {
 
         List<Member> allMembers = filterMembers(
             req.targetRanks(), req.targetGenders(),
-            req.targetAgeMin(), req.targetAgeMax(), req.targetHasPurchase());
+            req.targetAgeMin(), req.targetAgeMax(), req.targetHasPurchase(),
+            req.targetBirthMonth());
 
         List<Coupon> coupons = allMembers.stream()
             .map(member -> Coupon.builder()
@@ -137,12 +138,14 @@ public class CouponService {
     public int countTargetMembers(TargetCountRequest req) {
         return filterMembers(
             req.targetRanks(), req.targetGenders(),
-            req.targetAgeMin(), req.targetAgeMax(), req.targetHasPurchase()).size();
+            req.targetAgeMin(), req.targetAgeMax(), req.targetHasPurchase(),
+            req.targetBirthMonth()).size();
     }
 
     private List<Member> filterMembers(
             List<String> targetRanks, List<String> targetGenders,
-            Integer targetAgeMin, Integer targetAgeMax, Boolean targetHasPurchase) {
+            Integer targetAgeMin, Integer targetAgeMax, Boolean targetHasPurchase,
+            Integer targetBirthMonth) {
         LocalDate today = LocalDate.now();
         Set<String> ranks   = (targetRanks   != null && !targetRanks.isEmpty())   ? Set.copyOf(targetRanks)   : null;
         Set<String> genders = (targetGenders != null && !targetGenders.isEmpty())  ? Set.copyOf(targetGenders) : null;
@@ -155,6 +158,7 @@ public class CouponService {
             .filter(m -> targetAgeMin == null || (m.getBirthday() != null && calcAge(m.getBirthday(), today) >= targetAgeMin))
             .filter(m -> targetAgeMax == null || (m.getBirthday() != null && calcAge(m.getBirthday(), today) <= targetAgeMax))
             .filter(m -> purchasedIds == null || purchasedIds.contains(m.getId()))
+            .filter(m -> targetBirthMonth == null || (m.getBirthday() != null && m.getBirthday().getMonthValue() == targetBirthMonth))
             .toList();
     }
 

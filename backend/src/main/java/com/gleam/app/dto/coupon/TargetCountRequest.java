@@ -7,5 +7,6 @@ public record TargetCountRequest(
     List<String> targetGenders,
     Integer targetAgeMin,
     Integer targetAgeMax,
-    Boolean targetHasPurchase
+    Boolean targetHasPurchase,
+    Integer targetBirthMonth
 ) {}
