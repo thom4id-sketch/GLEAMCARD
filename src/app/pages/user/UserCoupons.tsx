@@ -32,19 +32,19 @@ export const UserCoupons = () => {
 
   return (
     <div className="flex flex-col h-full font-sans bg-[#f8f9fa]">
-      {/* Tabs */}
+      {/* タブ */}
       <div className="flex bg-white border-b border-[#d0d0d0]">
         <button
-          className={`flex-1 py-4 text-[10px] tracking-widest font-bold text-center border-b-[3px] transition-colors uppercase ${activeTab === 'my' ? 'border-[#5a5a5a] text-[#5a5a5a]' : 'border-transparent text-[#a0a0a0] hover:text-[#7a7a7a]'}`}
+          className={`flex-1 py-4 text-[10px] tracking-widest font-bold text-center border-b-[3px] transition-colors ${activeTab === 'my' ? 'border-[#5a5a5a] text-[#5a5a5a]' : 'border-transparent text-[#a0a0a0] hover:text-[#7a7a7a]'}`}
           onClick={() => setActiveTab('my')}
         >
-          My Coupons
+          マイクーポン
         </button>
         <button
-          className={`flex-1 py-4 text-[10px] tracking-widest font-bold text-center border-b-[3px] transition-colors uppercase ${activeTab === 'invite' ? 'border-[#5a5a5a] text-[#5a5a5a]' : 'border-transparent text-[#a0a0a0] hover:text-[#7a7a7a]'}`}
+          className={`flex-1 py-4 text-[10px] tracking-widest font-bold text-center border-b-[3px] transition-colors ${activeTab === 'invite' ? 'border-[#5a5a5a] text-[#5a5a5a]' : 'border-transparent text-[#a0a0a0] hover:text-[#7a7a7a]'}`}
           onClick={() => setActiveTab('invite')}
         >
-          Invite Friends
+          友達紹介
         </button>
       </div>
 
@@ -54,7 +54,7 @@ export const UserCoupons = () => {
             {coupons.length === 0 ? (
               <div className="text-center py-16 text-[#a0a0a0] border border-dashed border-[#d0d0d0] bg-white">
                 <Ticket className="mx-auto w-8 h-8 mb-4 opacity-50 stroke-1" />
-                <p className="text-xs tracking-widest">NO COUPONS AVAILABLE</p>
+                <p className="text-xs tracking-widest">クーポンがありません</p>
               </div>
             ) : (
               coupons.map(coupon => (
@@ -64,13 +64,13 @@ export const UserCoupons = () => {
 
                   <div className="bg-[#e2e2e2] text-[#5a5a5a] p-4 flex flex-col justify-center items-center w-20 flex-shrink-0 relative">
                     <Ticket className="w-6 h-6 mb-2 stroke-1" />
-                    <span className="text-[9px] font-bold tracking-widest -rotate-90 whitespace-nowrap mt-4 font-serif">TICKET</span>
+                    <span className="text-[9px] font-bold tracking-widest -rotate-90 whitespace-nowrap mt-4 font-serif">クーポン</span>
                   </div>
                   <div className="p-5 flex-1 border-l border-dashed border-[#7a7a7a] relative">
                     <h3 className="text-sm font-bold text-[#4a4a4a] mb-2 tracking-wide leading-tight">{coupon.name}</h3>
                     <p className="text-lg font-serif font-bold text-[#5a5a5a]">{coupon.discountDesc}</p>
                     <p className="text-[9px] text-[#a0a0a0] font-mono tracking-widest mt-3">
-                      EXP: {coupon.expiresAt ? coupon.expiresAt.replace(/-/g, '/') : '無期限'}
+                      有効期限: {coupon.expiresAt ? coupon.expiresAt.replace(/-/g, '/') : '無期限'}
                     </p>
                     {coupon.usageCondition && (
                       <p className="text-[9px] text-[#a0a0a0] font-mono tracking-widest mt-1">
@@ -90,12 +90,12 @@ export const UserCoupons = () => {
               <div className="inline-flex bg-[#ececec] text-[#5a5a5a] p-4 mb-6 rounded-full border border-[#d0d0d0]">
                 <Users className="w-6 h-6 stroke-1" />
               </div>
-              <h3 className="text-sm font-bold text-[#4a4a4a] mb-4 tracking-widest leading-relaxed uppercase">
-                Invite Friends<br />Get Rewards
+              <h3 className="text-sm font-bold text-[#4a4a4a] mb-4 tracking-widest leading-relaxed">
+                友達紹介で<br />ポイントゲット
               </h3>
               <p className="text-xs text-[#7a7a7a] mb-8 leading-loose text-left">
                 お友達があなたのリンクから登録し、初回購入を完了すると、あなたに
-                <span className="font-bold text-[#5a5a5a] border-b border-[#a0a0a0] pb-0.5">500ポイント</span>
+                <span className="font-bold text-[#5a5a5a] border-b border-[#a0a0a0] pb-0.5">1,000ポイント</span>
                 をプレゼント！お友達にも
                 <span className="font-bold text-[#5a5a5a] border-b border-[#a0a0a0] pb-0.5">1,000円OFFクーポン</span>
                 が届きます。
@@ -121,7 +121,7 @@ export const UserCoupons = () => {
                       {copied ? <Check size={16} strokeWidth={1} /> : <Copy size={16} strokeWidth={1} />}
                     </button>
                   </div>
-                  <p className="text-[9px] text-[#a0a0a0] tracking-widest uppercase">SHARE THIS LINK</p>
+                  <p className="text-[9px] text-[#a0a0a0] tracking-widest">リンクをシェア</p>
                 </>
               )}
             </div>

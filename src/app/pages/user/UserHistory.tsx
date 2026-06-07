@@ -22,19 +22,19 @@ export const UserHistory = () => {
 
   return (
     <div className="flex flex-col h-full font-sans bg-[#f8f9fa]">
-      {/* Tabs */}
+      {/* タブ */}
       <div className="flex bg-white border-b border-[#d0d0d0] sticky top-0 z-10 shadow-sm">
         <button
-          className={`flex-1 py-4 text-[10px] tracking-widest font-bold text-center border-b-[3px] transition-colors uppercase ${activeTab === 'purchase' ? 'border-[#5a5a5a] text-[#5a5a5a]' : 'border-transparent text-[#a0a0a0] hover:text-[#7a7a7a]'}`}
+          className={`flex-1 py-4 text-[10px] tracking-widest font-bold text-center border-b-[3px] transition-colors ${activeTab === 'purchase' ? 'border-[#5a5a5a] text-[#5a5a5a]' : 'border-transparent text-[#a0a0a0] hover:text-[#7a7a7a]'}`}
           onClick={() => setActiveTab('purchase')}
         >
-          Purchase
+          購入履歴
         </button>
         <button
-          className={`flex-1 py-4 text-[10px] tracking-widest font-bold text-center border-b-[3px] transition-colors uppercase ${activeTab === 'point' ? 'border-[#5a5a5a] text-[#5a5a5a]' : 'border-transparent text-[#a0a0a0] hover:text-[#7a7a7a]'}`}
+          className={`flex-1 py-4 text-[10px] tracking-widest font-bold text-center border-b-[3px] transition-colors ${activeTab === 'point' ? 'border-[#5a5a5a] text-[#5a5a5a]' : 'border-transparent text-[#a0a0a0] hover:text-[#7a7a7a]'}`}
           onClick={() => setActiveTab('point')}
         >
-          Points
+          ポイント
         </button>
       </div>
 
@@ -45,7 +45,7 @@ export const UserHistory = () => {
             {purchases.length === 0 ? (
               <div className="text-center py-16 text-[#a0a0a0] bg-white border-b border-[#d0d0d0]">
                 <ShoppingBag className="mx-auto w-8 h-8 mb-4 opacity-50 stroke-1" />
-                <p className="text-xs tracking-widest uppercase">No Purchase History</p>
+                <p className="text-xs tracking-widest">購入履歴がありません</p>
               </div>
             ) : (
               purchases.map(purchase => (
@@ -55,41 +55,41 @@ export const UserHistory = () => {
                       <span className="text-xs text-[#7a7a7a] font-mono tracking-widest block mb-1">
                         {safeFormat(purchase.date, 'yyyy.MM.dd HH:mm')}
                       </span>
-                      <span className="text-sm font-bold text-[#4a4a4a] tracking-widest uppercase">{purchase.storeName}</span>
+                      <span className="text-sm font-bold text-[#4a4a4a] tracking-widest">{purchase.storeName}</span>
                     </div>
                     {purchase.status === 'canceled' && (
                       <div className="flex items-center space-x-1 text-[#a0a0a0]">
                         <XCircle className="w-3 h-3 stroke-1" />
-                        <span className="text-[10px] tracking-widest font-bold uppercase">Canceled</span>
+                        <span className="text-[10px] tracking-widest font-bold">キャンセル済</span>
                       </div>
                     )}
                   </div>
 
                   {purchase.status === 'canceled' ? (
-                    <div className="py-3 text-center border border-dashed border-[#d0d0d0] text-[#a0a0a0] font-bold text-[10px] uppercase tracking-widest bg-[#f8f9fa]">
+                    <div className="py-3 text-center border border-dashed border-[#d0d0d0] text-[#a0a0a0] font-bold text-[10px] tracking-widest bg-[#f8f9fa]">
                       この取引はキャンセルされました
                     </div>
                   ) : (
                     <div className="space-y-3 text-sm">
                       <div className="flex justify-between items-center">
-                        <span className="text-[10px] text-[#7a7a7a] tracking-widest uppercase">Amount (Tax inc.)</span>
+                        <span className="text-[10px] text-[#7a7a7a] tracking-widest">お支払い金額（税込）</span>
                         <span className="font-mono text-base tracking-tighter text-[#4a4a4a]">¥{purchase.amount.toLocaleString()}</span>
                       </div>
                       {purchase.pointsUsed > 0 && (
                         <div className="flex justify-between items-center text-[#7a7a7a]">
-                          <span className="text-[10px] tracking-widest uppercase">Points Used</span>
+                          <span className="text-[10px] tracking-widest">利用ポイント</span>
                           <span className="font-mono text-sm tracking-tighter">-{purchase.pointsUsed} pt</span>
                         </div>
                       )}
                       {purchase.couponUsed && (
                         <div className="flex justify-between items-center text-[#7a7a7a]">
-                          <span className="text-[10px] tracking-widest uppercase">Coupon Used</span>
-                          <span className="text-[10px] tracking-widest font-bold">YES</span>
+                          <span className="text-[10px] tracking-widest">クーポン利用</span>
+                          <span className="text-[10px] tracking-widest font-bold">あり</span>
                         </div>
                       )}
                       <div className="flex justify-between items-center pt-3 border-t border-[#e0e0e0]">
                         <div className="flex items-center space-x-1">
-                          <span className="text-[10px] text-[#7a7a7a] tracking-widest uppercase">Points</span>
+                          <span className="text-[10px] text-[#7a7a7a] tracking-widest">ポイント</span>
                           {purchase.pointsGranted ? (
                             <span className="text-[9px] bg-[#5a5a5a] text-white px-1.5 py-0.5 tracking-widest font-bold">付与済み</span>
                           ) : (
@@ -113,7 +113,7 @@ export const UserHistory = () => {
         {activeTab === 'point' && (
           <div className="flex flex-col">
             <div className="bg-[#ececec] text-[#4a4a4a] p-6 flex flex-col items-center justify-center border-b border-[#d0d0d0] shadow-sm mb-1">
-              <span className="text-[10px] tracking-widest opacity-80 mb-2 uppercase text-[#5a5a5a]">Current Points</span>
+              <span className="text-[10px] tracking-widest opacity-80 mb-2 text-[#5a5a5a]">現在のポイント</span>
               <span className="text-4xl font-mono tracking-tighter text-[#4a4a4a]">
                 {currentUser?.points.toLocaleString()}
                 <span className="text-sm ml-1 font-sans text-[#7a7a7a]">pt</span>
@@ -123,7 +123,7 @@ export const UserHistory = () => {
             {pendingGrants.length === 0 && pointHistory.length === 0 ? (
               <div className="text-center py-16 text-[#a0a0a0] bg-white border-b border-[#d0d0d0]">
                 <Coins className="mx-auto w-8 h-8 mb-4 opacity-50 stroke-1" />
-                <p className="text-xs tracking-widest uppercase">No Point History</p>
+                <p className="text-xs tracking-widest">ポイント履歴がありません</p>
               </div>
             ) : (
               <>

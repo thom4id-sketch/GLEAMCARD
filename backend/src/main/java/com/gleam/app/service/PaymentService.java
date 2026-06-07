@@ -159,7 +159,7 @@ public class PaymentService {
         if (rewardedThisMonth < MONTHLY_REFERRAL_LIMIT) {
             grantRepository.save(ScheduledPointGrant.builder()
                 .member(invitation.getInviter())
-                .amount(500)
+                .amount(1000)
                 .grantReason(ScheduledPointGrant.GrantReason.FRIEND_REFERRAL)
                 .relatedPurchase(purchase)
                 .scheduledAt(now.plusDays(7))
