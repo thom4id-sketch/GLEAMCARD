@@ -112,6 +112,11 @@ export const AdminScan = () => {
       return;
     }
 
+    const confirmed = window.confirm(
+      '鼻盛り代、修理代、割引サービス品、セール品の売上金額は除外しましたか？'
+    );
+    if (!confirmed) return;
+
     setSubmitLoading(true);
     try {
       const res = await api.post<ProcessPaymentResponse>('/api/admin/payments', {
