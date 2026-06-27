@@ -113,7 +113,7 @@ export const AdminScan = () => {
     }
 
     const confirmed = window.confirm(
-      '鼻盛り代、修理代、割引サービス品、セール品の売上金額は除外しましたか？'
+      '鼻盛り代、修理代、フレームのみ購入、割引サービス品、セール品、ショッピングローンの売上金額は除外しましたか？'
     );
     if (!confirmed) return;
 

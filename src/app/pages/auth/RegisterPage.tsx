@@ -4,8 +4,10 @@ import { UserPlus, Gift } from 'lucide-react';
 
 export const RegisterPage = () => {
   const { completeRegistration } = useAuth();
-  const [name, setName] = useState('');
-  const [nameKana, setNameKana] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastNameKana, setLastNameKana] = useState('');
+  const [firstNameKana, setFirstNameKana] = useState('');
   const [birthday, setBirthday] = useState('');
   const [gender, setGender] = useState('');
   const [loading, setLoading] = useState(false);
@@ -14,7 +16,6 @@ export const RegisterPage = () => {
   const hasInvitation = new URLSearchParams(window.location.search).has('inv');
 
   const isHiragana = (str: string) => /^[ぁ-ゖー\s　]+$/.test(str);
-  const hasFullWidthSpace = (str: string) => str.includes('　');
 
   const handleBirthdayChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const digits = e.target.value.replace(/\D/g, '').slice(0, 8);
@@ -27,22 +28,24 @@ export const RegisterPage = () => {
     setBirthday(formatted);
   };
 
-  const isFormValid = name.trim() && hasFullWidthSpace(name) && nameKana.trim() && isHiragana(nameKana.trim()) && birthday && gender;
+  const isFormValid =
+    lastName.trim() && firstName.trim() &&
+    lastNameKana.trim() && isHiragana(lastNameKana.trim()) &&
+    firstNameKana.trim() && isHiragana(firstNameKana.trim()) &&
+    birthday && gender;
 
   const handleRegister = async () => {
     if (!isFormValid) return;
-    if (!hasFullWidthSpace(name)) {
-      setError('氏名は姓と名の間に全角スペースを入れてください');
-      return;
-    }
-    if (!isHiragana(nameKana.trim())) {
+    if (!isHiragana(lastNameKana.trim()) || !isHiragana(firstNameKana.trim())) {
       setError('ふりがなはひらがなで入力してください');
       return;
     }
     setLoading(true);
     setError('');
+    const fullName = `${lastName.trim()}　${firstName.trim()}`;
+    const fullNameKana = `${lastNameKana.trim()}　${firstNameKana.trim()}`;
     try {
-      await completeRegistration(name.trim(), nameKana.trim(), birthday, gender);
+      await completeRegistration(fullName, fullNameKana, birthday, gender);
     } catch (e) {
       setError(e instanceof Error ? e.message : '登録に失敗しました。もう一度お試しください。');
       setLoading(false);
@@ -91,41 +94,61 @@ export const RegisterPage = () => {
               <label className="block text-[11px] font-bold text-[#7a7a7a] tracking-widest mb-2">
                 氏名 <span className="text-red-500">*</span>
               </label>
-              <input
-                type="text"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                placeholder="例: 山田　太郎"
-                className={`w-full border bg-white px-3 py-3 text-sm focus:outline-none text-[#4a4a4a] transition-colors ${
-                  name && !hasFullWidthSpace(name)
-                    ? 'border-red-300 focus:border-red-400'
-                    : 'border-[#d0d0d0] focus:border-[#5a5a5a]'
-                }`}
-              />
-              {name && !hasFullWidthSpace(name) ? (
-                <p className="text-[10px] text-red-500 mt-1 tracking-wide">姓と名の間に全角スペースを入れてください</p>
-              ) : (
-                <p className="text-[10px] text-[#a0a0a0] mt-1 tracking-wide">姓と名の間に全角スペースを入れてください</p>
-              )}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={lastName}
+                  onChange={e => setLastName(e.target.value)}
+                  placeholder="姓（例: 山田）"
+                  className="w-1/2 border border-[#d0d0d0] bg-white px-3 py-3 text-sm focus:outline-none focus:border-[#5a5a5a] text-[#4a4a4a] transition-colors"
+                />
+                <input
+                  type="text"
+                  value={firstName}
+                  onChange={e => setFirstName(e.target.value)}
+                  placeholder="名（例: 太郎）"
+                  className="w-1/2 border border-[#d0d0d0] bg-white px-3 py-3 text-sm focus:outline-none focus:border-[#5a5a5a] text-[#4a4a4a] transition-colors"
+                />
+              </div>
             </div>
             <div>
               <label className="block text-[11px] font-bold text-[#7a7a7a] tracking-widest mb-2">
                 ふりがな <span className="text-red-500">*</span>
               </label>
-              <input
-                type="text"
-                value={nameKana}
-                onChange={e => setNameKana(e.target.value)}
-                placeholder="例: やまだ　たろう"
-                className={`w-full border bg-white px-3 py-3 text-sm focus:outline-none text-[#4a4a4a] transition-colors ${
-                  nameKana && !isHiragana(nameKana)
-                    ? 'border-red-300 focus:border-red-400'
-                    : 'border-[#d0d0d0] focus:border-[#5a5a5a]'
-                }`}
-              />
-              {nameKana && !isHiragana(nameKana) && (
-                <p className="text-[10px] text-red-500 mt-1 tracking-wide">ひらがなで入力してください</p>
-              )}
+              <div className="flex gap-2">
+                <div className="w-1/2">
+                  <input
+                    type="text"
+                    value={lastNameKana}
+                    onChange={e => setLastNameKana(e.target.value)}
+                    placeholder="せい（例: やまだ）"
+                    className={`w-full border bg-white px-3 py-3 text-sm focus:outline-none text-[#4a4a4a] transition-colors ${
+                      lastNameKana && !isHiragana(lastNameKana)
+                        ? 'border-red-300 focus:border-red-400'
+                        : 'border-[#d0d0d0] focus:border-[#5a5a5a]'
+                    }`}
+                  />
+                  {lastNameKana && !isHiragana(lastNameKana) && (
+                    <p className="text-[10px] text-red-500 mt-1 tracking-wide">ひらがなで入力してください</p>
+                  )}
+                </div>
+                <div className="w-1/2">
+                  <input
+                    type="text"
+                    value={firstNameKana}
+                    onChange={e => setFirstNameKana(e.target.value)}
+                    placeholder="めい（例: たろう）"
+                    className={`w-full border bg-white px-3 py-3 text-sm focus:outline-none text-[#4a4a4a] transition-colors ${
+                      firstNameKana && !isHiragana(firstNameKana)
+                        ? 'border-red-300 focus:border-red-400'
+                        : 'border-[#d0d0d0] focus:border-[#5a5a5a]'
+                    }`}
+                  />
+                  {firstNameKana && !isHiragana(firstNameKana) && (
+                    <p className="text-[10px] text-red-500 mt-1 tracking-wide">ひらがなで入力してください</p>
+                  )}
+                </div>
+              </div>
             </div>
 
             <div>
