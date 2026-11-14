@@ -5,6 +5,8 @@ import { useAuth } from '../../context/AuthContext';
 import { api } from '../../lib/api';
 
 const REFERRAL_DISCOUNT = 5; // ご紹介された方の特典（%OFF）
+/** ページ背景色（ヘッダーのロゴ画像の背景色と揃える。変更時は Tailwind クラス側の bg-[#1c1c1c] も合わせる） */
+const PAGE_BG = '#1c1c1c';
 
 interface Props {
   /** 右上の「✕」押下時（通常の会員画面へ切り替える） */
@@ -31,8 +33,8 @@ export const DiamondMemberPage = ({ onClose }: Props) => {
   useEffect(() => {
     const prevBody = document.body.style.backgroundColor;
     const prevHtml = document.documentElement.style.backgroundColor;
-    document.body.style.backgroundColor = '#111111';
-    document.documentElement.style.backgroundColor = '#111111';
+    document.body.style.backgroundColor = PAGE_BG;
+    document.documentElement.style.backgroundColor = PAGE_BG;
     return () => {
       document.body.style.backgroundColor = prevBody;
       document.documentElement.style.backgroundColor = prevHtml;
@@ -89,11 +91,11 @@ export const DiamondMemberPage = ({ onClose }: Props) => {
 
   return (
     // 黒背景は画面の高さ + 50px まで伸ばす（下端に白地が見えないようにするため）
-    <div className="min-h-[calc(100dvh+50px)] max-w-md mx-auto bg-[#111111] text-white font-sans flex flex-col pb-[50px]">
+    <div className="min-h-[calc(100dvh+50px)] max-w-md mx-auto bg-[#1c1c1c] text-white font-sans flex flex-col pb-[50px]">
       {/* ヘッダー */}
       <header className="shrink-0 flex items-center justify-between px-5 h-12 border-b border-white/10">
         <span className="text-[11px] tracking-widest text-white/60">会員ページ</span>
-        <span className="text-lg font-bold tracking-[0.35em] font-serif pl-[0.35em]">GLEAM</span>
+        <img src="/gleam-logo-dark.png" alt="GLEAM" className="h-[18px] w-auto select-none" draggable={false} />
         <button
           type="button"
           onClick={onClose}
@@ -176,7 +178,7 @@ export const DiamondMemberPage = ({ onClose }: Props) => {
           type="button"
           onClick={handleShare}
           disabled={sharing}
-          className="w-full shrink-0 bg-white text-[#111111] py-4 flex items-center justify-center gap-3 text-base font-bold tracking-[0.2em] pl-[0.2em] hover:bg-white/90 active:bg-white/80 transition disabled:opacity-60"
+          className="w-full shrink-0 bg-white text-[#1c1c1c] py-4 flex items-center justify-center gap-3 text-base font-bold tracking-[0.2em] pl-[0.2em] hover:bg-white/90 active:bg-white/80 transition disabled:opacity-60"
         >
           {sharing ? 'リンクを作成中...' : '友だちに紹介する'}
           {!sharing && <ArrowRight className="w-5 h-5" strokeWidth={1.5} />}
