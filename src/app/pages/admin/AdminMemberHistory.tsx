@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router';
 import { format, parseISO } from 'date-fns';
 import { ArrowLeft, XCircle, FileText, Gem } from 'lucide-react';
 import { api } from '../../lib/api';
-import { HistorySearchBar } from '../../components/admin/HistorySearchBar';
+import { HistorySearchBar, type FilterRank } from '../../components/admin/HistorySearchBar';
 import { RankBadge } from '../../components/admin/RankBadge';
 import { LoadMoreSentinel } from '../../components/admin/LoadMoreSentinel';
 import type { AdminMemberSummary } from './AdminHistory';
@@ -46,6 +46,7 @@ export const AdminMemberHistory = () => {
   // 検索バー（会員一覧と同じ機能）：検索すると会員一覧へ戻って絞り込み結果を表示する
   const [filterName, setFilterName] = useState('');
   const [exactMatch, setExactMatch] = useState(false);
+  const [ranks, setRanks] = useState<FilterRank[]>([]);
 
   const PAGE_SIZE = 50;
 
@@ -99,6 +100,7 @@ export const AdminMemberHistory = () => {
     const name = filterName.trim();
     const params = new URLSearchParams();
     if (name) { params.set('name', name); params.set('exact', String(exactMatch)); }
+    if (ranks.length > 0) params.set('ranks', ranks.join(','));
     const query = params.toString();
     navigate(`/admin/history${query ? `?${query}` : ''}`);
   };
@@ -164,6 +166,8 @@ export const AdminMemberHistory = () => {
           onChange={setFilterName}
           exactMatch={exactMatch}
           onExactMatchChange={setExactMatch}
+          ranks={ranks}
+          onRanksChange={setRanks}
           onSearch={handleSearch}
           placeholder="他の会員を名前で検索..."
         />

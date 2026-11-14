@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { format, parseISO } from 'date-fns';
 import { FileText, ChevronRight } from 'lucide-react';
 import { api } from '../../lib/api';
-import { HistorySearchBar } from '../../components/admin/HistorySearchBar';
+import { HistorySearchBar, parseRanksParam, type FilterRank } from '../../components/admin/HistorySearchBar';
 import { RankBadge, getRankStyle } from '../../components/admin/RankBadge';
 import { LoadMoreSentinel } from '../../components/admin/LoadMoreSentinel';
 
@@ -33,10 +33,12 @@ export const AdminHistory = () => {
   // 検索条件は URL クエリで保持（会員別履歴から戻った時に復元される）
   const queryName = searchParams.get('name') ?? '';
   const queryExact = searchParams.get('exact') === 'true';
+  const queryRanksStr = searchParams.get('ranks') ?? '';
 
   const [members, setMembers] = useState<AdminMemberSummary[]>([]);
   const [filterName, setFilterName] = useState(queryName);
   const [exactMatch, setExactMatch] = useState(queryExact);
+  const [ranks, setRanks] = useState<FilterRank[]>(() => parseRanksParam(queryRanksStr));
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(0);
@@ -46,17 +48,18 @@ export const AdminHistory = () => {
 
   const PAGE_SIZE = 50;
 
-  const fetchPage = useCallback(async (name: string, exact: boolean, pageNo: number) => {
+  const fetchPage = useCallback(async (name: string, exact: boolean, ranksStr: string, pageNo: number) => {
     const params = new URLSearchParams({ size: String(PAGE_SIZE), page: String(pageNo) });
     if (name) { params.set('name', name); params.set('exact', String(exact)); }
+    if (ranksStr) params.set('ranks', ranksStr);
     return api.get<PageResponse>(`/api/admin/members?${params}`);
   }, []);
 
-  const load = useCallback(async (name: string, exact: boolean) => {
+  const load = useCallback(async (name: string, exact: boolean, ranksStr: string) => {
     setLoading(true);
     setError('');
     try {
-      const res = await fetchPage(name, exact, 0);
+      const res = await fetchPage(name, exact, ranksStr, 0);
       setMembers(res.content);
       setPage(0);
       setTotalPages(res.totalPages);
@@ -74,7 +77,7 @@ export const AdminHistory = () => {
     const next = page + 1;
     setLoadingMore(true);
     try {
-      const res = await fetchPage(queryName, queryExact, next);
+      const res = await fetchPage(queryName, queryExact, queryRanksStr, next);
       setMembers(prev => [...prev, ...res.content]);
       setPage(next);
       setTotalPages(res.totalPages);
@@ -84,20 +87,22 @@ export const AdminHistory = () => {
     } finally {
       setLoadingMore(false);
     }
-  }, [loadingMore, page, queryName, queryExact, fetchPage]);
+  }, [loadingMore, page, queryName, queryExact, queryRanksStr, fetchPage]);
 
   const hasMore = page + 1 < totalPages;
 
   useEffect(() => {
     setFilterName(queryName);
     setExactMatch(queryExact);
-    load(queryName, queryExact);
-  }, [queryName, queryExact, load]);
+    setRanks(parseRanksParam(queryRanksStr));
+    load(queryName, queryExact, queryRanksStr);
+  }, [queryName, queryExact, queryRanksStr, load]);
 
   const handleSearch = () => {
     const name = filterName.trim();
     const next = new URLSearchParams();
     if (name) { next.set('name', name); next.set('exact', String(exactMatch)); }
+    if (ranks.length > 0) next.set('ranks', ranks.join(','));
     setSearchParams(next);
   };
 
@@ -113,6 +118,8 @@ export const AdminHistory = () => {
           onChange={setFilterName}
           exactMatch={exactMatch}
           onExactMatchChange={setExactMatch}
+          ranks={ranks}
+          onRanksChange={setRanks}
           onSearch={handleSearch}
         />
       </div>

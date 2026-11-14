@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/admin/members")
 @RequiredArgsConstructor
@@ -17,14 +19,18 @@ public class AdminMemberController {
 
     private final MemberService memberService;
 
-    /** GET /api/admin/members?name=xxx&exact=false&page=0&size=50 — 会員一覧（決済履歴の入口） */
+    /**
+     * GET /api/admin/members?name=xxx&exact=false&ranks=GOLD,PLATINUM&page=0&size=50 — 会員一覧（決済履歴の入口）
+     * ranks はカンマ区切り（未指定なら全ランク）
+     */
     @GetMapping
     public ResponseEntity<Page<AdminMemberSummaryDto>> searchMembers(
             @RequestParam(required = false) String name,
             @RequestParam(defaultValue = "false") boolean exact,
+            @RequestParam(required = false) List<String> ranks,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int size) {
-        return ResponseEntity.ok(memberService.searchMembers(name, exact, page, size));
+        return ResponseEntity.ok(memberService.searchMembers(name, exact, ranks, page, size));
     }
 
     /** GET /api/admin/members/id/{id} — 会員IDで会員サマリを取得 */

@@ -127,7 +127,8 @@ public class MemberService {
      * 購入履歴テーブル上の最新購入日時が新しい順（履歴の無い会員は末尾、同順は会員番号順）に返す。
      * 並び順の基準が購入履歴の実レコードなので、会員側の lastPurchaseAt が未設定でも正しく並ぶ。
      */
-    public Page<AdminMemberSummaryDto> searchMembers(String name, boolean exact, int page, int size) {
+    public Page<AdminMemberSummaryDto> searchMembers(String name, boolean exact, List<String> ranks,
+                                                     int page, int size) {
         List<Member> members;
         if (name != null && !name.isBlank()) {
             members = exact
@@ -135,6 +136,12 @@ public class MemberService {
                 : memberRepository.findByNameContaining(name);
         } else {
             members = memberRepository.findAll();
+        }
+
+        // ランク絞り込み（未指定なら全ランク。不正な値は無視）
+        Set<Member.Rank> rankFilter = parseRanks(ranks);
+        if (!rankFilter.isEmpty()) {
+            members = members.stream().filter(m -> rankFilter.contains(m.getRank())).toList();
         }
 
         Map<Long, MemberPurchaseSummary> summaries = summarizePurchases(
@@ -152,6 +159,18 @@ public class MemberService {
         int from = (int) Math.min(pageable.getOffset(), sorted.size());
         int to = Math.min(from + size, sorted.size());
         return new PageImpl<>(sorted.subList(from, to), pageable, sorted.size());
+    }
+
+    private Set<Member.Rank> parseRanks(List<String> ranks) {
+        if (ranks == null) return Set.of();
+        return ranks.stream()
+            .filter(r -> r != null && !r.isBlank())
+            .map(r -> {
+                try { return Member.Rank.valueOf(r.trim().toUpperCase()); }
+                catch (IllegalArgumentException e) { return null; }
+            })
+            .filter(java.util.Objects::nonNull)
+            .collect(Collectors.toSet());
     }
 
     /** 管理者用：会員IDで会員サマリを1件取得（会員別決済履歴画面のヘッダー用） */
