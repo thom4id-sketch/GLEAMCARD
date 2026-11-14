@@ -71,22 +71,23 @@ export const DiamondMemberPage = () => {
   };
 
   return (
-    <div className="min-h-[100dvh] max-w-md mx-auto bg-[#111111] text-white font-sans flex flex-col">
+    <div className="h-[100dvh] max-w-md mx-auto bg-[#111111] text-white font-sans flex flex-col">
       {/* ヘッダー */}
-      <header className="flex items-center justify-between px-5 h-14 border-b border-white/10">
+      <header className="shrink-0 flex items-center justify-between px-5 h-12 border-b border-white/10">
         <span className="text-[11px] tracking-widest text-white/60">会員ページ</span>
         <span className="text-lg font-bold tracking-[0.35em] font-serif pl-[0.35em]">GLEAM</span>
         <span className="w-[4.5em]" aria-hidden="true" />
       </header>
 
-      <main className="flex-1 flex flex-col items-center px-6 pt-12 pb-10">
+      {/* 1画面に収めるため、縦方向は flex で配分し、余った分は線画の上下に寄せる */}
+      <main className="flex-1 min-h-0 flex flex-col items-center px-6 pt-5 pb-5 overflow-y-auto">
         {/* タイトル */}
-        <p className="text-[11px] tracking-[0.5em] text-white/60 uppercase mb-4 pl-[0.5em]">Diamond Member</p>
-        <h1 className="text-[26px] font-bold tracking-[0.25em] pl-[0.25em] mb-5">ダイヤモンド会員</h1>
-        <p className="text-sm tracking-widest text-white/70 mb-12">{currentUser?.name} 様</p>
+        <p className="text-[10px] tracking-[0.5em] text-white/60 uppercase mb-2 pl-[0.5em]">Diamond Member</p>
+        <h1 className="text-[22px] font-bold tracking-[0.25em] pl-[0.25em] mb-2">ダイヤモンド会員</h1>
+        <p className="text-xs tracking-widest text-white/70">{currentUser?.name} 様</p>
 
-        {/* ダイヤモンドの線画 */}
-        <div className="relative w-full max-w-[320px] aspect-square mb-12">
+        {/* ダイヤモンドの線画（高さは画面サイズに連動） */}
+        <div className="relative shrink-0 aspect-square my-auto py-2 h-[clamp(120px,24dvh,200px)]">
           <div className="absolute inset-[12%] rounded-full bg-white/[0.06] blur-3xl" aria-hidden="true" />
           <svg viewBox="0 0 200 200" className="relative w-full h-full" fill="none" stroke="#ffffff" strokeWidth="1.6" strokeLinejoin="round" aria-hidden="true">
             {/* 上面 */}
@@ -115,44 +116,42 @@ export const DiamondMemberPage = () => {
         </div>
 
         {/* 紹介数・特典 */}
-        <div className="w-full grid grid-cols-2 border border-white/40 mb-8">
-          <div className="py-8 px-3 text-center border-r border-white/40">
-            <p className="text-[11px] tracking-widest text-white/70 mb-4">現在までの紹介数</p>
+        <div className="w-full shrink-0 grid grid-cols-2 border border-white/40 mb-4">
+          <div className="py-5 px-3 text-center border-r border-white/40">
+            <p className="text-[10px] tracking-widest text-white/70 mb-2">現在までの紹介数</p>
             <p className="font-mono leading-none">
-              <span className="text-5xl font-light">{referralCount ?? '–'}</span>
-              <span className="text-sm ml-1 tracking-widest">名</span>
+              <span className="text-4xl font-light">{referralCount ?? '–'}</span>
+              <span className="text-xs ml-1 tracking-widest">名</span>
             </p>
           </div>
-          <div className="py-8 px-3 text-center">
-            <p className="text-[11px] tracking-widest text-white/70 mb-4">ご紹介された方の特典</p>
+          <div className="py-5 px-3 text-center">
+            <p className="text-[10px] tracking-widest text-white/70 mb-2">ご紹介された方の特典</p>
             <p className="font-mono leading-none">
-              <span className="text-5xl font-light">{REFERRAL_DISCOUNT}</span>
-              <span className="text-sm ml-1 tracking-widest">% OFF</span>
+              <span className="text-4xl font-light">{REFERRAL_DISCOUNT}</span>
+              <span className="text-xs ml-1 tracking-widest">% OFF</span>
             </p>
           </div>
         </div>
 
-        <p className="text-xs leading-loose tracking-wider text-white/70 text-center mb-10">
+        <p className="shrink-0 text-[11px] leading-relaxed tracking-wider text-white/70 text-center mb-4">
           ご紹介されたお友だちは、初回のお買い物が{REFERRAL_DISCOUNT}%OFFになります。
         </p>
 
         {notice && (
-          <div className="w-full border border-white/30 bg-white/5 px-4 py-3 mb-6 text-center">
-            <p className="text-xs tracking-wider text-white/90">{notice.text}</p>
+          <div className="w-full shrink-0 border border-white/30 bg-white/5 px-4 py-2 mb-3 text-center">
+            <p className="text-[11px] tracking-wider text-white/90">{notice.text}</p>
             {notice.url && (
-              <p className="mt-2 text-[10px] font-mono tracking-wider text-white/70 break-all select-all">{notice.url}</p>
+              <p className="mt-1 text-[10px] font-mono tracking-wider text-white/70 break-all select-all">{notice.url}</p>
             )}
           </div>
         )}
-
-        <div className="flex-1" />
 
         {/* 友だちに紹介する */}
         <button
           type="button"
           onClick={handleShare}
           disabled={sharing}
-          className="w-full bg-white text-[#111111] py-5 flex items-center justify-center gap-3 text-lg font-bold tracking-[0.2em] pl-[0.2em] hover:bg-white/90 active:bg-white/80 transition disabled:opacity-60"
+          className="w-full shrink-0 bg-white text-[#111111] py-4 flex items-center justify-center gap-3 text-base font-bold tracking-[0.2em] pl-[0.2em] hover:bg-white/90 active:bg-white/80 transition disabled:opacity-60"
         >
           {sharing ? 'リンクを作成中...' : '友だちに紹介する'}
           {!sharing && <ArrowRight className="w-5 h-5" strokeWidth={1.5} />}

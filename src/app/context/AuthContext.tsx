@@ -73,7 +73,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const mockAdmin = import.meta.env.VITE_DEV_MOCK_ADMIN === 'true' || adminMode;
         console.info('[Auth] DEV MOCK MODE — LIFF / backend auth skipped');
         setIsAdmin(mockAdmin);
-        setCurrentUser(MOCK_USER);
+        // VITE_DEV_MOCK_RANK でモックユーザーのランクを上書きできる（例: DIAMOND で専用ページ確認）
+        const mockRank = import.meta.env.VITE_DEV_MOCK_RANK as string | undefined;
+        setCurrentUser(mockRank ? { ...MOCK_USER, rank: mockRank } : MOCK_USER);
         setStatus('ready');
         return;
       }
