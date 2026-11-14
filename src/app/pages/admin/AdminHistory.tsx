@@ -5,6 +5,7 @@ import { FileText, ChevronRight } from 'lucide-react';
 import { api } from '../../lib/api';
 import { HistorySearchBar } from '../../components/admin/HistorySearchBar';
 import { RankBadge, getRankStyle } from '../../components/admin/RankBadge';
+import { LoadMoreSentinel } from '../../components/admin/LoadMoreSentinel';
 
 export interface AdminMemberSummary {
   id: number;
@@ -68,7 +69,8 @@ export const AdminHistory = () => {
     }
   }, [fetchPage]);
 
-  const loadMore = async () => {
+  const loadMore = useCallback(async () => {
+    if (loadingMore) return;
     const next = page + 1;
     setLoadingMore(true);
     try {
@@ -82,7 +84,7 @@ export const AdminHistory = () => {
     } finally {
       setLoadingMore(false);
     }
-  };
+  }, [loadingMore, page, queryName, queryExact, fetchPage]);
 
   const hasMore = page + 1 < totalPages;
 
@@ -132,11 +134,6 @@ export const AdminHistory = () => {
           </div>
         )}
 
-        {!loading && members.length > 0 && (
-          <p className="text-[10px] text-[#a0a0a0] tracking-widest font-mono text-right">
-            {members.length} / {totalElements} 名
-          </p>
-        )}
 
         {!loading && members.map(m => (
           <button
@@ -176,15 +173,15 @@ export const AdminHistory = () => {
           </button>
         ))}
 
-        {!loading && hasMore && (
-          <button
-            type="button"
-            onClick={loadMore}
-            disabled={loadingMore}
-            className="w-full py-3 border border-[#d0d0d0] bg-white text-[#7a7a7a] text-xs font-bold tracking-widest hover:bg-[#f8f9fa] transition disabled:opacity-50"
-          >
-            {loadingMore ? '読み込み中...' : 'さらに読み込む'}
-          </button>
+        {!loading && members.length > 0 && (
+          <LoadMoreSentinel
+            hasMore={hasMore}
+            loading={loadingMore}
+            onLoadMore={loadMore}
+            loaded={members.length}
+            total={totalElements}
+            unit="名"
+          />
         )}
       </div>
     </div>

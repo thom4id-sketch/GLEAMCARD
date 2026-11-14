@@ -5,6 +5,7 @@ import { ArrowLeft, XCircle, FileText } from 'lucide-react';
 import { api } from '../../lib/api';
 import { HistorySearchBar } from '../../components/admin/HistorySearchBar';
 import { RankBadge } from '../../components/admin/RankBadge';
+import { LoadMoreSentinel } from '../../components/admin/LoadMoreSentinel';
 import type { AdminMemberSummary } from './AdminHistory';
 
 interface PaymentHistoryItem {
@@ -70,8 +71,8 @@ export const AdminMemberHistory = () => {
     }
   }, [fetchPage]);
 
-  const loadMore = async () => {
-    if (!memberId) return;
+  const loadMore = useCallback(async () => {
+    if (!memberId || loadingMore) return;
     const next = page + 1;
     setLoadingMore(true);
     try {
@@ -85,7 +86,7 @@ export const AdminMemberHistory = () => {
     } finally {
       setLoadingMore(false);
     }
-  };
+  }, [memberId, loadingMore, page, fetchPage]);
 
   const hasMore = page + 1 < totalPages;
 
@@ -189,11 +190,6 @@ export const AdminMemberHistory = () => {
           </div>
         )}
 
-        {!loading && items.length > 0 && (
-          <p className="text-[10px] text-[#a0a0a0] tracking-widest font-mono text-right">
-            {items.length} / {totalElements} 件
-          </p>
-        )}
 
         {!loading && items.map(item => (
           <div key={item.id} className="bg-white p-5 shadow-sm border border-[#d0d0d0]">
@@ -244,15 +240,15 @@ export const AdminMemberHistory = () => {
           </div>
         ))}
 
-        {!loading && hasMore && (
-          <button
-            type="button"
-            onClick={loadMore}
-            disabled={loadingMore}
-            className="w-full py-3 border border-[#d0d0d0] bg-white text-[#7a7a7a] text-xs font-bold tracking-widest hover:bg-[#f8f9fa] transition disabled:opacity-50"
-          >
-            {loadingMore ? '読み込み中...' : 'さらに読み込む'}
-          </button>
+        {!loading && items.length > 0 && (
+          <LoadMoreSentinel
+            hasMore={hasMore}
+            loading={loadingMore}
+            onLoadMore={loadMore}
+            loaded={items.length}
+            total={totalElements}
+            unit="件"
+          />
         )}
       </div>
     </div>
