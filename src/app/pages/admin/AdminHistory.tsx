@@ -43,18 +43,54 @@ export const AdminHistory = () => {
   const [filterName, setFilterName] = useState(queryName);
   const [exactMatch, setExactMatch] = useState(queryExact);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+  const [error, setError] = useState('');
+
+  const PAGE_SIZE = 50;
+
+  const fetchPage = useCallback(async (name: string, exact: boolean, pageNo: number) => {
+    const params = new URLSearchParams({ size: String(PAGE_SIZE), page: String(pageNo) });
+    if (name) { params.set('name', name); params.set('exact', String(exact)); }
+    return api.get<PageResponse>(`/api/admin/members?${params}`);
+  }, []);
 
   const load = useCallback(async (name: string, exact: boolean) => {
     setLoading(true);
+    setError('');
     try {
-      const params = new URLSearchParams({ size: '50' });
-      if (name) { params.set('name', name); params.set('exact', String(exact)); }
-      const res = await api.get<PageResponse>(`/api/admin/members?${params}`);
+      const res = await fetchPage(name, exact, 0);
       setMembers(res.content);
+      setPage(0);
+      setTotalPages(res.totalPages);
+      setTotalElements(res.totalElements);
+    } catch (e) {
+      setMembers([]);
+      setError(e instanceof Error ? e.message : '読み込みに失敗しました');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [fetchPage]);
+
+  const loadMore = async () => {
+    const next = page + 1;
+    setLoadingMore(true);
+    try {
+      const res = await fetchPage(queryName, queryExact, next);
+      setMembers(prev => [...prev, ...res.content]);
+      setPage(next);
+      setTotalPages(res.totalPages);
+      setTotalElements(res.totalElements);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : '読み込みに失敗しました');
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  const hasMore = page + 1 < totalPages;
 
   useEffect(() => {
     setFilterName(queryName);
@@ -90,10 +126,22 @@ export const AdminHistory = () => {
           <p className="text-center text-xs text-[#a0a0a0] tracking-widest animate-pulse py-10">読み込み中...</p>
         )}
 
-        {!loading && members.length === 0 && (
+        {!loading && error && (
+          <div className="text-center py-10 text-[#a0a0a0] text-xs tracking-widest font-bold border border-dashed border-[#d0d0d0] bg-white">
+            {error}
+          </div>
+        )}
+
+        {!loading && !error && members.length === 0 && (
           <div className="text-center py-10 text-[#a0a0a0] text-xs tracking-widest font-bold border border-dashed border-[#d0d0d0] bg-white">
             該当する会員がいません
           </div>
+        )}
+
+        {!loading && members.length > 0 && (
+          <p className="text-[10px] text-[#a0a0a0] tracking-widest font-mono text-right">
+            {members.length} / {totalElements} 名
+          </p>
         )}
 
         {!loading && members.map(m => (
@@ -135,6 +183,17 @@ export const AdminHistory = () => {
             <ChevronRight className="w-5 h-5 text-[#a0a0a0] stroke-1 ml-3 shrink-0" />
           </button>
         ))}
+
+        {!loading && hasMore && (
+          <button
+            type="button"
+            onClick={loadMore}
+            disabled={loadingMore}
+            className="w-full py-3 border border-[#d0d0d0] bg-white text-[#7a7a7a] text-xs font-bold tracking-widest hover:bg-[#f8f9fa] transition disabled:opacity-50"
+          >
+            {loadingMore ? '読み込み中...' : 'さらに読み込む'}
+          </button>
+        )}
       </div>
     </div>
   );

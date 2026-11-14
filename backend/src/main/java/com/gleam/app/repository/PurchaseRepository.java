@@ -35,22 +35,26 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long> {
     @Query("SELECT DISTINCT p.member.id FROM Purchase p WHERE p.status = 'COMPLETED'")
     java.util.Set<Long> findMemberIdsWithCompletedPurchase();
 
-    // 管理者向け会員一覧用：指定会員ごとの完了済み購入回数と税込み累計額
+    // 管理者向け会員一覧用：会員ごとの購入サマリ
+    //  - purchaseCount / totalAmount は完了済みのみ集計
+    //  - latestPurchasedAt は取り消し分も含む最新の購入履歴日時（並び順の基準）
     @Query("""
         SELECT p.member.id AS memberId,
-               COUNT(p) AS purchaseCount,
-               COALESCE(SUM(p.amount), 0) AS totalAmount
+               SUM(CASE WHEN p.status = 'COMPLETED' THEN 1 ELSE 0 END) AS purchaseCount,
+               SUM(CASE WHEN p.status = 'COMPLETED' THEN p.amount ELSE 0 END) AS totalAmount,
+               MAX(p.purchasedAt) AS latestPurchasedAt
         FROM Purchase p
-        WHERE p.member.id IN :memberIds AND p.status = 'COMPLETED'
+        WHERE p.member.id IN :memberIds
         GROUP BY p.member.id
         """)
-    List<MemberPurchaseSummary> summarizeCompletedByMemberIds(@Param("memberIds") Collection<Long> memberIds);
+    List<MemberPurchaseSummary> summarizeByMemberIds(@Param("memberIds") Collection<Long> memberIds);
 
-    /** summarizeCompletedByMemberIds の射影 */
+    /** summarizeByMemberIds の射影 */
     interface MemberPurchaseSummary {
         Long getMemberId();
-        long getPurchaseCount();
-        long getTotalAmount();
+        Long getPurchaseCount();
+        Long getTotalAmount();
+        OffsetDateTime getLatestPurchasedAt();
     }
 
     // クーポン削除前に参照をNULLクリア（外部キー制約回避）

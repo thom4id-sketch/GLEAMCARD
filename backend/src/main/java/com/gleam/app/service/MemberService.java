@@ -9,8 +9,8 @@ import com.gleam.app.repository.PurchaseRepository.MemberPurchaseSummary;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +19,7 @@ import com.gleam.app.entity.PointHistory;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -123,28 +124,34 @@ public class MemberService {
     /**
      * 管理者用：会員一覧（決済履歴の入口）。
      * 名前で検索（exact=true で完全一致、false で部分一致）し、
-     * 最終購入日の新しい順（未購入は末尾）に返す。
+     * 購入履歴テーブル上の最新購入日時が新しい順（履歴の無い会員は末尾、同順は会員番号順）に返す。
+     * 並び順の基準が購入履歴の実レコードなので、会員側の lastPurchaseAt が未設定でも正しく並ぶ。
      */
     public Page<AdminMemberSummaryDto> searchMembers(String name, boolean exact, int page, int size) {
-        Sort sort = Sort.by(
-            Sort.Order.desc("lastPurchaseAt").nullsLast(),
-            Sort.Order.asc("memberNo")
-        );
-        PageRequest pageable = PageRequest.of(page, size, sort);
-
-        Page<Member> members;
+        List<Member> members;
         if (name != null && !name.isBlank()) {
             members = exact
-                ? memberRepository.findByName(name, pageable)
-                : memberRepository.findByNameContaining(name, pageable);
+                ? memberRepository.findByName(name)
+                : memberRepository.findByNameContaining(name);
         } else {
-            members = memberRepository.findAll(pageable);
+            members = memberRepository.findAll();
         }
 
         Map<Long, MemberPurchaseSummary> summaries = summarizePurchases(
-            members.getContent().stream().map(Member::getId).toList());
+            members.stream().map(Member::getId).toList());
 
-        return members.map(m -> AdminMemberSummaryDto.from(m, summaries.get(m.getId())));
+        Comparator<AdminMemberSummaryDto> byLatestPurchaseDesc = Comparator.comparing(
+            AdminMemberSummaryDto::lastPurchaseAt,
+            Comparator.nullsLast(Comparator.<OffsetDateTime>reverseOrder()));
+        List<AdminMemberSummaryDto> sorted = members.stream()
+            .map(m -> AdminMemberSummaryDto.from(m, summaries.get(m.getId())))
+            .sorted(byLatestPurchaseDesc.thenComparing(AdminMemberSummaryDto::memberNo))
+            .toList();
+
+        PageRequest pageable = PageRequest.of(page, size);
+        int from = (int) Math.min(pageable.getOffset(), sorted.size());
+        int to = Math.min(from + size, sorted.size());
+        return new PageImpl<>(sorted.subList(from, to), pageable, sorted.size());
     }
 
     /** 管理者用：会員IDで会員サマリを1件取得（会員別決済履歴画面のヘッダー用） */
@@ -156,7 +163,7 @@ public class MemberService {
 
     private Map<Long, MemberPurchaseSummary> summarizePurchases(List<Long> memberIds) {
         if (memberIds.isEmpty()) return Map.of();
-        return purchaseRepository.summarizeCompletedByMemberIds(memberIds)
+        return purchaseRepository.summarizeByMemberIds(memberIds)
             .stream()
             .collect(Collectors.toMap(MemberPurchaseSummary::getMemberId, s -> s));
     }

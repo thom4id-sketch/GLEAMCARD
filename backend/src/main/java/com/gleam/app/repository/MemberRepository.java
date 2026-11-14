@@ -1,8 +1,6 @@
 package com.gleam.app.repository;
 
 import com.gleam.app.entity.Member;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -15,9 +13,9 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Optional<Member> findByMemberNo(String memberNo);
     boolean existsByLineUserId(String lineUserId);
 
-    // 管理者向け会員検索（完全一致 / 部分一致）
-    Page<Member> findByName(String name, Pageable pageable);
-    Page<Member> findByNameContaining(String name, Pageable pageable);
+    // 管理者向け会員検索（完全一致 / 部分一致）。並び替えはサービス側で購入履歴基準に行う
+    List<Member> findByName(String name);
+    List<Member> findByNameContaining(String name);
 
     // 最後の購入から3年以上経過しているメンバー（ポイント失効対象）
     @Query("SELECT m FROM Member m WHERE m.points > 0 AND m.lastPurchaseAt < :expiryThreshold")

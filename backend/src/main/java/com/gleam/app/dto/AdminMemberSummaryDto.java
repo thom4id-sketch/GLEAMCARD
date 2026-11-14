@@ -15,7 +15,7 @@ public record AdminMemberSummaryDto(
     int points,
     long purchaseCount,      // 完了済み購入回数
     long totalAmount,        // 完了済み税込み累計購入額
-    OffsetDateTime lastPurchaseAt
+    OffsetDateTime lastPurchaseAt  // 最新の購入履歴日時（取り消し分も含む）。履歴が無ければ null
 ) {
     public static AdminMemberSummaryDto from(Member member, MemberPurchaseSummary summary) {
         return new AdminMemberSummaryDto(
@@ -25,9 +25,9 @@ public record AdminMemberSummaryDto(
             member.getNameKana(),
             member.getRank().name(),
             member.getPoints(),
-            summary != null ? summary.getPurchaseCount() : 0L,
-            summary != null ? summary.getTotalAmount() : 0L,
-            member.getLastPurchaseAt()
+            summary != null && summary.getPurchaseCount() != null ? summary.getPurchaseCount() : 0L,
+            summary != null && summary.getTotalAmount() != null ? summary.getTotalAmount() : 0L,
+            summary != null ? summary.getLatestPurchasedAt() : null
         );
     }
 }

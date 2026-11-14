@@ -33,6 +33,10 @@ export const AdminMemberHistory = () => {
   const [member, setMember] = useState<AdminMemberSummary | null>(null);
   const [items, setItems] = useState<PaymentHistoryItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
   const [error, setError] = useState('');
   const [cancelingId, setCancelingId] = useState<number | null>(null);
 
@@ -40,22 +44,49 @@ export const AdminMemberHistory = () => {
   const [filterName, setFilterName] = useState('');
   const [exactMatch, setExactMatch] = useState(false);
 
+  const PAGE_SIZE = 50;
+
+  const fetchPage = useCallback((id: string, pageNo: number) =>
+    api.get<PageResponse>(`/api/admin/payments?memberId=${id}&size=${PAGE_SIZE}&page=${pageNo}`), []);
+
   const load = useCallback(async (id: string) => {
     setLoading(true);
     setError('');
     try {
       const [m, res] = await Promise.all([
         api.get<AdminMemberSummary>(`/api/admin/members/id/${id}`),
-        api.get<PageResponse>(`/api/admin/payments?memberId=${id}&size=100`),
+        fetchPage(id, 0),
       ]);
       setMember(m);
       setItems(res.content);
+      setPage(0);
+      setTotalPages(res.totalPages);
+      setTotalElements(res.totalElements);
     } catch (e) {
       setError(e instanceof Error ? e.message : '読み込みに失敗しました');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [fetchPage]);
+
+  const loadMore = async () => {
+    if (!memberId) return;
+    const next = page + 1;
+    setLoadingMore(true);
+    try {
+      const res = await fetchPage(memberId, next);
+      setItems(prev => [...prev, ...res.content]);
+      setPage(next);
+      setTotalPages(res.totalPages);
+      setTotalElements(res.totalElements);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : '読み込みに失敗しました');
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  const hasMore = page + 1 < totalPages;
 
   useEffect(() => {
     if (memberId) load(memberId);
@@ -159,6 +190,12 @@ export const AdminMemberHistory = () => {
           </div>
         )}
 
+        {!loading && items.length > 0 && (
+          <p className="text-[10px] text-[#a0a0a0] tracking-widest font-mono text-right">
+            {items.length} / {totalElements} 件
+          </p>
+        )}
+
         {!loading && items.map(item => (
           <div key={item.id} className="bg-white p-5 shadow-sm border border-[#d0d0d0]">
             <div className="flex justify-between items-start mb-4 border-b border-[#d0d0d0] pb-4">
@@ -207,6 +244,17 @@ export const AdminMemberHistory = () => {
             )}
           </div>
         ))}
+
+        {!loading && hasMore && (
+          <button
+            type="button"
+            onClick={loadMore}
+            disabled={loadingMore}
+            className="w-full py-3 border border-[#d0d0d0] bg-white text-[#7a7a7a] text-xs font-bold tracking-widest hover:bg-[#f8f9fa] transition disabled:opacity-50"
+          >
+            {loadingMore ? '読み込み中...' : 'さらに読み込む'}
+          </button>
+        )}
       </div>
     </div>
   );
