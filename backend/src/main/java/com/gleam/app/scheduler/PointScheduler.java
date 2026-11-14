@@ -58,21 +58,21 @@ public class PointScheduler {
 
     /**
      * 毎日00:05：ポイント失効チェック。
-     * 通常会員は最終購入から3年、Platinum は4年で失効。
+     * 通常会員は最終購入から3年、Platinum / Diamond は4年で失効。
      */
     @Scheduled(cron = "0 5 0 * * *")
     @Transactional
     public void checkPointExpiry() {
         OffsetDateTime now = OffsetDateTime.now();
-        // 通常3年失効（Platinum以外）
+        // 通常3年失効（Platinum / Diamond 以外）
         List<Member> expiredNormal = memberRepository.findMembersWithExpiredPoints(now.minusYears(3))
             .stream()
-            .filter(m -> m.getRank() != Member.Rank.PLATINUM)
+            .filter(m -> !m.getRank().hasExtendedPointExpiry())
             .toList();
-        // Platinum は4年失効
+        // Platinum / Diamond は4年失効
         List<Member> expiredPlatinum = memberRepository.findMembersWithExpiredPoints(now.minusYears(4))
             .stream()
-            .filter(m -> m.getRank() == Member.Rank.PLATINUM)
+            .filter(m -> m.getRank().hasExtendedPointExpiry())
             .toList();
 
         for (Member member : java.util.stream.Stream.concat(expiredNormal.stream(), expiredPlatinum.stream()).toList()) {

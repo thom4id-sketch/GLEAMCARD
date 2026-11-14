@@ -32,7 +32,7 @@ interface CouponGroup {
 }
 
 type DiscountType = 'PERCENT' | 'AMOUNT';
-type Rank = 'REGULAR' | 'SILVER' | 'GOLD' | 'PLATINUM';
+type Rank = 'REGULAR' | 'SILVER' | 'GOLD' | 'PLATINUM' | 'DIAMOND';
 type Gender = 'MALE' | 'FEMALE' | 'OTHER';
 
 const ALL_RANKS: { value: Rank; label: string }[] = [
@@ -40,6 +40,7 @@ const ALL_RANKS: { value: Rank; label: string }[] = [
   { value: 'SILVER', label: 'シルバー' },
   { value: 'GOLD', label: 'ゴールド' },
   { value: 'PLATINUM', label: 'プラチナ' },
+  { value: 'DIAMOND', label: 'ダイヤモンド' },
 ];
 const ALL_GENDERS: { value: Gender; label: string }[] = [
   { value: 'MALE', label: '男性' },

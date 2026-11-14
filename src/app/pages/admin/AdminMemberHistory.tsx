@@ -108,7 +108,7 @@ export const AdminMemberHistory = () => {
     const isDiamond = member.rank === 'DIAMOND';
     const confirmMsg = isDiamond
       ? `${member.name} 様のダイヤモンド会員を解除しますか？\n（3年間の購入実績に応じた通常ランクに戻ります）`
-      : `${member.name} 様をダイヤモンド会員にしますか？\n（ダイヤモンド会員は専用ページのみ表示され、通常の会員証は利用できなくなります）`;
+      : `${member.name} 様をダイヤモンド会員にしますか？\n（ログイン直後にダイヤモンド専用ページが表示されます。ポイント等の扱いはプラチナと同じです）`;
     if (!window.confirm(confirmMsg)) return;
 
     setDiamondUpdating(true);

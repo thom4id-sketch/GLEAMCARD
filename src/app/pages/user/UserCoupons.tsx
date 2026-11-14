@@ -4,7 +4,9 @@ import { Link } from 'react-router';
 import { Ticket, Users, Copy, Check } from 'lucide-react';
 
 export const UserCoupons = () => {
-  const { coupons, issueFriendLink, refresh } = useStore();
+  const { coupons, issueFriendLink, refresh, currentUser } = useStore();
+  // ダイヤモンド会員からの紹介は、お友達への特典が「初回のお買い物5%OFF（期限なし）」になる
+  const isDiamond = currentUser?.rank === 'Diamond';
   const [activeTab, setActiveTab] = useState<'my' | 'invite'>('my');
   const [inviteUrl, setInviteUrl] = useState('');
   const [inviteLoading, setInviteLoading] = useState(false);
@@ -97,7 +99,9 @@ export const UserCoupons = () => {
                 お友達があなたのリンクから登録し、初回購入を完了すると、あなたに
                 <span className="font-bold text-[#5a5a5a] border-b border-[#a0a0a0] pb-0.5">1,000ポイント</span>
                 をプレゼント！お友達にも
-                <span className="font-bold text-[#5a5a5a] border-b border-[#a0a0a0] pb-0.5">1,000円OFFクーポン</span>
+                <span className="font-bold text-[#5a5a5a] border-b border-[#a0a0a0] pb-0.5">
+                  {isDiamond ? '初回のお買い物5%OFFクーポン' : '1,000円OFFクーポン'}
+                </span>
                 が届きます。
               </p>
 

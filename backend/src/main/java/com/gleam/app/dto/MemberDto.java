@@ -16,7 +16,8 @@ public record MemberDto(
     LocalDate pointExpiresAt
 ) {
     public static MemberDto from(Member member) {
-        int expiryYears = member.getRank() == Member.Rank.PLATINUM ? 4 : 3;
+        // ポイント失効までの年数：Platinum / Diamond は4年、それ以外は3年
+        int expiryYears = member.getRank().hasExtendedPointExpiry() ? 4 : 3;
         LocalDate pointExpiresAt = member.getLastPurchaseAt() != null
             ? member.getLastPurchaseAt().toLocalDate().plusYears(expiryYears)
             : null;

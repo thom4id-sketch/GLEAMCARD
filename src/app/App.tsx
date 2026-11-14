@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { RouterProvider } from 'react-router';
 import { router } from './routes';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -16,6 +17,13 @@ const DataGate = () => {
 /** 認証状態に応じてコンテンツを切り替えるゲート */
 const AuthGate = () => {
   const { status, error, currentUser, isAdmin } = useAuth();
+  const isDiamondUser = !isAdmin && currentUser?.rank === 'DIAMOND';
+
+  // ダイヤモンド会員はログイン直後に専用ページを表示し、「✕」で通常の会員画面へ切り替えられる
+  const [showDiamondPage, setShowDiamondPage] = useState(false);
+  useEffect(() => {
+    if (status === 'ready' && isDiamondUser) setShowDiamondPage(true);
+  }, [status, isDiamondUser]);
 
   if (status === 'loading') {
     return <LoadingScreen />;
@@ -37,9 +45,8 @@ const AuthGate = () => {
   }
 
   // status === 'ready'
-  // ダイヤモンド会員（ユーザー向けLIFF）は通常の会員画面へは遷移させず、専用ページのみ表示する
-  if (!isAdmin && currentUser?.rank === 'DIAMOND') {
-    return <DiamondMemberPage />;
+  if (isDiamondUser && showDiamondPage) {
+    return <DiamondMemberPage onClose={() => setShowDiamondPage(false)} />;
   }
 
   return (

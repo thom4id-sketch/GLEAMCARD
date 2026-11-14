@@ -81,7 +81,7 @@ public class Member {
     /**
      * 会員ランク。
      * DIAMOND は購入額では到達せず、管理者が明示的に付与・解除する特別ランク。
-     * ダイヤモンド会員はアプリ経由で購入しないため、ポイント付与率は実質使用されない。
+     * ポイント付与率・失効年数などの扱いは PLATINUM と同じ。
      */
     public enum Rank {
         REGULAR, SILVER, GOLD, PLATINUM, DIAMOND;
@@ -94,6 +94,11 @@ public class Member {
                 case SILVER   -> 0.08;
                 default       -> 0.05;
             };
+        }
+
+        /** ポイント失効が4年（通常は3年）になる上位ランクかどうか（Platinum / Diamond） */
+        public boolean hasExtendedPointExpiry() {
+            return this == PLATINUM || this == DIAMOND;
         }
 
         /** 3年間累計購入額（税抜き）でランクを判定。DIAMOND はここからは返らない。 */

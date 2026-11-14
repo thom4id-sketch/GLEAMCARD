@@ -1,13 +1,18 @@
 import { useCallback, useEffect, useState } from 'react';
 import liff from '@line/liff';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../lib/api';
 
 const REFERRAL_DISCOUNT = 5; // ご紹介された方の特典（%OFF）
 
-/** ダイヤモンド会員専用ページ（通常の会員証・履歴画面には遷移しない） */
-export const DiamondMemberPage = () => {
+interface Props {
+  /** 右上の「✕」押下時（通常の会員画面へ切り替える） */
+  onClose: () => void;
+}
+
+/** ダイヤモンド会員専用ページ（ログイン直後に表示。✕ で通常の会員画面へ） */
+export const DiamondMemberPage = ({ onClose }: Props) => {
   const { currentUser } = useAuth();
   const [referralCount, setReferralCount] = useState<number | null>(null);
   const [sharing, setSharing] = useState(false);
@@ -89,7 +94,14 @@ export const DiamondMemberPage = () => {
       <header className="shrink-0 flex items-center justify-between px-5 h-12 border-b border-white/10">
         <span className="text-[11px] tracking-widest text-white/60">会員ページ</span>
         <span className="text-lg font-bold tracking-[0.35em] font-serif pl-[0.35em]">GLEAM</span>
-        <span className="w-[4.5em]" aria-hidden="true" />
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="通常の会員画面へ"
+          className="w-[4.5em] h-full flex items-center justify-end text-white/80 hover:text-white active:text-white/60 transition -mr-2 pr-2"
+        >
+          <X className="w-6 h-6" strokeWidth={1.25} />
+        </button>
       </header>
 
       {/* 1画面に収めるため、縦方向は flex で配分し、余った分は線画の上下に寄せる */}
