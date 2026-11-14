@@ -4,6 +4,7 @@ import { format, parseISO } from 'date-fns';
 import { FileText, ChevronRight } from 'lucide-react';
 import { api } from '../../lib/api';
 import { HistorySearchBar } from '../../components/admin/HistorySearchBar';
+import { RankBadge, getRankStyle } from '../../components/admin/RankBadge';
 
 export interface AdminMemberSummary {
   id: number;
@@ -22,13 +23,6 @@ interface PageResponse {
   totalPages: number;
   totalElements: number;
 }
-
-export const rankLabel = (rank: string) => {
-  if (rank === 'PLATINUM') return 'Platinum';
-  if (rank === 'GOLD') return 'Gold';
-  if (rank === 'SILVER') return 'Silver';
-  return 'Regular';
-};
 
 /** 決済履歴管理：会員一覧（ここから会員ごとの履歴へ遷移） */
 export const AdminHistory = () => {
@@ -149,16 +143,14 @@ export const AdminHistory = () => {
             key={m.id}
             type="button"
             onClick={() => navigate(`/admin/history/${m.id}`)}
-            className="w-full text-left bg-white p-5 shadow-sm border border-[#d0d0d0] hover:bg-[#f8f9fa] transition flex items-center"
+            className={`w-full text-left bg-white p-5 shadow-sm border border-[#d0d0d0] border-l-4 ${getRankStyle(m.rank).accent} hover:bg-[#f8f9fa] transition flex items-center`}
           >
             <div className="flex-1 min-w-0">
-              <div className="flex items-baseline justify-between mb-1">
+              <div className="flex items-center justify-between mb-1 gap-2">
                 <div className="text-base font-bold text-[#4a4a4a] tracking-wide font-serif truncate">
                   {m.name}
                 </div>
-                <div className="text-[10px] px-2 py-0.5 border border-[#d0d0d0] text-[#7a7a7a] tracking-widest font-serif ml-2 shrink-0">
-                  {rankLabel(m.rank)}
-                </div>
+                <RankBadge rank={m.rank} />
               </div>
               <div className="text-[11px] text-[#7a7a7a] tracking-widest font-mono">
                 No. {m.memberNo}

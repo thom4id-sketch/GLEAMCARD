@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Scan, Calculator, UserCheck, CheckCircle, Info } from 'lucide-react';
 import liff from '@line/liff';
 import { api } from '../../lib/api';
+import { RankBadge } from '../../components/admin/RankBadge';
 
 interface StoreDto {
   id: number;
@@ -139,12 +140,6 @@ export const AdminScan = () => {
     }
   };
 
-  const rankLabel = (rank: string) => {
-    if (rank === 'PLATINUM') return 'Platinum';
-    if (rank === 'GOLD') return 'Gold';
-    if (rank === 'SILVER') return 'Silver';
-    return 'Regular';
-  };
 
   return (
     <div className="h-full flex flex-col bg-[#f8f9fa] font-sans">
@@ -206,10 +201,13 @@ export const AdminScan = () => {
               <div className="bg-[#f8f9fa] p-3 border border-[#d0d0d0]">
                 <UserCheck className="w-6 h-6 text-[#5a5a5a] stroke-1" />
               </div>
-              <div>
-                <p className="text-[11px] tracking-widest text-[#7a7a7a] mb-1 font-bold">
-                  会員番号: {targetMember.memberNo} ({rankLabel(targetMember.rank)})
-                </p>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <p className="text-[11px] tracking-widest text-[#7a7a7a] font-bold">
+                    会員番号: {targetMember.memberNo}
+                  </p>
+                  <RankBadge rank={targetMember.rank} />
+                </div>
                 <p className="text-base font-bold text-[#4a4a4a] tracking-wide font-serif">
                   {targetMember.name} 様
                 </p>

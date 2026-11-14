@@ -4,7 +4,8 @@ import { format, parseISO } from 'date-fns';
 import { ArrowLeft, XCircle, FileText } from 'lucide-react';
 import { api } from '../../lib/api';
 import { HistorySearchBar } from '../../components/admin/HistorySearchBar';
-import { rankLabel, type AdminMemberSummary } from './AdminHistory';
+import { RankBadge } from '../../components/admin/RankBadge';
+import type { AdminMemberSummary } from './AdminHistory';
 
 interface PaymentHistoryItem {
   id: number;
@@ -148,11 +149,9 @@ export const AdminMemberHistory = () => {
       <div className="p-5 flex-1 overflow-y-auto space-y-4">
         {member && (
           <div className="bg-[#5a5a5a] text-white p-5 shadow-sm">
-            <div className="flex items-baseline justify-between">
+            <div className="flex items-center justify-between gap-2">
               <div className="text-lg font-bold tracking-wide font-serif">{member.name}</div>
-              <div className="text-[10px] px-2 py-0.5 border border-white/50 tracking-widest font-serif">
-                {rankLabel(member.rank)}
-              </div>
+              <RankBadge rank={member.rank} size="md" />
             </div>
             <div className="text-[11px] text-white/70 tracking-widest font-mono mt-0.5">
               No. {member.memberNo}
