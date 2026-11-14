@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,6 +34,24 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long> {
     // 購入経験者フィルタ用：完了済み購入が1件以上ある会員IDセット
     @Query("SELECT DISTINCT p.member.id FROM Purchase p WHERE p.status = 'COMPLETED'")
     java.util.Set<Long> findMemberIdsWithCompletedPurchase();
+
+    // 管理者向け会員一覧用：指定会員ごとの完了済み購入回数と税込み累計額
+    @Query("""
+        SELECT p.member.id AS memberId,
+               COUNT(p) AS purchaseCount,
+               COALESCE(SUM(p.amount), 0) AS totalAmount
+        FROM Purchase p
+        WHERE p.member.id IN :memberIds AND p.status = 'COMPLETED'
+        GROUP BY p.member.id
+        """)
+    List<MemberPurchaseSummary> summarizeCompletedByMemberIds(@Param("memberIds") Collection<Long> memberIds);
+
+    /** summarizeCompletedByMemberIds の射影 */
+    interface MemberPurchaseSummary {
+        Long getMemberId();
+        long getPurchaseCount();
+        long getTotalAmount();
+    }
 
     // クーポン削除前に参照をNULLクリア（外部キー制約回避）
     @org.springframework.data.jpa.repository.Modifying

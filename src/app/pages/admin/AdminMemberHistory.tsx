@@ -1,0 +1,213 @@
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useParams } from 'react-router';
+import { format, parseISO } from 'date-fns';
+import { ArrowLeft, XCircle, FileText } from 'lucide-react';
+import { api } from '../../lib/api';
+import { HistorySearchBar } from '../../components/admin/HistorySearchBar';
+import { rankLabel, type AdminMemberSummary } from './AdminHistory';
+
+interface PaymentHistoryItem {
+  id: number;
+  memberNo: string;
+  memberName: string;
+  storeName: string;
+  amount: number;
+  pointsUsed: number;
+  pointsToGrant: number;
+  couponUsed: boolean;
+  purchasedAt: string;
+  status: string;
+}
+
+interface PageResponse {
+  content: PaymentHistoryItem[];
+  totalPages: number;
+  totalElements: number;
+}
+
+/** 決済履歴管理：会員ごとの決済履歴（取り消し操作もここで行う） */
+export const AdminMemberHistory = () => {
+  const navigate = useNavigate();
+  const { memberId } = useParams<{ memberId: string }>();
+
+  const [member, setMember] = useState<AdminMemberSummary | null>(null);
+  const [items, setItems] = useState<PaymentHistoryItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [cancelingId, setCancelingId] = useState<number | null>(null);
+
+  // 検索バー（会員一覧と同じ機能）：検索すると会員一覧へ戻って絞り込み結果を表示する
+  const [filterName, setFilterName] = useState('');
+  const [exactMatch, setExactMatch] = useState(false);
+
+  const load = useCallback(async (id: string) => {
+    setLoading(true);
+    setError('');
+    try {
+      const [m, res] = await Promise.all([
+        api.get<AdminMemberSummary>(`/api/admin/members/id/${id}`),
+        api.get<PageResponse>(`/api/admin/payments?memberId=${id}&size=100`),
+      ]);
+      setMember(m);
+      setItems(res.content);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : '読み込みに失敗しました');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (memberId) load(memberId);
+  }, [memberId, load]);
+
+  const handleSearch = () => {
+    const name = filterName.trim();
+    const params = new URLSearchParams();
+    if (name) { params.set('name', name); params.set('exact', String(exactMatch)); }
+    const query = params.toString();
+    navigate(`/admin/history${query ? `?${query}` : ''}`);
+  };
+
+  const handleCancel = async (id: number) => {
+    if (!window.confirm('この決済を取り消しますか？\n（ポイントやクーポンの利用状況も元に戻ります）')) return;
+    setCancelingId(id);
+    try {
+      await api.put(`/api/admin/payments/${id}/cancel`);
+      setItems(prev => prev.map(p => p.id === id ? { ...p, status: 'CANCELED' } : p));
+      // 取り消し後はヘッダーの購入回数・累計額も更新する
+      if (memberId) {
+        api.get<AdminMemberSummary>(`/api/admin/members/id/${memberId}`).then(setMember).catch(() => {});
+      }
+    } catch (e) {
+      alert(e instanceof Error ? e.message : '取消に失敗しました');
+    } finally {
+      setCancelingId(null);
+    }
+  };
+
+  return (
+    <div className="h-full flex flex-col bg-[#f8f9fa] font-sans">
+      <div className="p-5 bg-white border-b border-[#d0d0d0] shadow-sm z-10 sticky top-0">
+        <div className="flex items-center mb-4">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="mr-3 p-1 -ml-1 text-[#7a7a7a] hover:text-[#4a4a4a] transition"
+            aria-label="会員一覧へ戻る"
+          >
+            <ArrowLeft className="w-5 h-5 stroke-1" />
+          </button>
+          <h2 className="text-sm font-bold text-[#5a5a5a] flex items-center tracking-widest">
+            <FileText className="w-5 h-5 mr-2 stroke-1" />
+            決済履歴管理
+          </h2>
+        </div>
+
+        <HistorySearchBar
+          value={filterName}
+          onChange={setFilterName}
+          exactMatch={exactMatch}
+          onExactMatchChange={setExactMatch}
+          onSearch={handleSearch}
+          placeholder="他の会員を名前で検索..."
+        />
+      </div>
+
+      <div className="p-5 flex-1 overflow-y-auto space-y-4">
+        {member && (
+          <div className="bg-[#5a5a5a] text-white p-5 shadow-sm">
+            <div className="flex items-baseline justify-between">
+              <div className="text-lg font-bold tracking-wide font-serif">{member.name}</div>
+              <div className="text-[10px] px-2 py-0.5 border border-white/50 tracking-widest font-serif">
+                {rankLabel(member.rank)}
+              </div>
+            </div>
+            <div className="text-[11px] text-white/70 tracking-widest font-mono mt-0.5">
+              No. {member.memberNo}
+            </div>
+            <div className="mt-4 pt-3 border-t border-white/30 grid grid-cols-3 gap-2 text-[10px] tracking-wider font-mono">
+              <div>
+                <div className="text-white/60 mb-0.5">購入回数</div>
+                <div className="font-bold">{member.purchaseCount} 回</div>
+              </div>
+              <div>
+                <div className="text-white/60 mb-0.5">累計金額</div>
+                <div className="font-bold">¥{member.totalAmount.toLocaleString()}</div>
+              </div>
+              <div>
+                <div className="text-white/60 mb-0.5">保有ポイント</div>
+                <div className="font-bold">{member.points.toLocaleString()} pt</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {loading && (
+          <p className="text-center text-xs text-[#a0a0a0] tracking-widest animate-pulse py-10">読み込み中...</p>
+        )}
+
+        {!loading && error && (
+          <div className="text-center py-10 text-[#a0a0a0] text-xs tracking-widest font-bold border border-dashed border-[#d0d0d0] bg-white">
+            {error}
+          </div>
+        )}
+
+        {!loading && !error && items.length === 0 && (
+          <div className="text-center py-10 text-[#a0a0a0] text-xs tracking-widest font-bold border border-dashed border-[#d0d0d0] bg-white">
+            この会員の決済履歴はありません
+          </div>
+        )}
+
+        {!loading && items.map(item => (
+          <div key={item.id} className="bg-white p-5 shadow-sm border border-[#d0d0d0]">
+            <div className="flex justify-between items-start mb-4 border-b border-[#d0d0d0] pb-4">
+              <div>
+                <div className="text-xs text-[#7a7a7a] mb-1 font-mono tracking-widest">
+                  {format(parseISO(item.purchasedAt), 'yyyy/MM/dd HH:mm')}
+                </div>
+                <div className="text-[11px] text-[#7a7a7a] tracking-widest mt-1">
+                  {item.storeName}
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-lg font-bold font-mono text-[#5a5a5a] tracking-wider">
+                  ¥{item.amount.toLocaleString()}
+                </div>
+                <div className={`text-[10px] px-2 py-1 tracking-widest inline-block mt-2 border ${item.status === 'COMPLETED' ? 'border-[#5a5a5a] text-[#5a5a5a] font-bold' : 'border-[#d0d0d0] text-[#a0a0a0] line-through bg-[#f8f9fa]'}`}>
+                  {item.status === 'COMPLETED' ? '完了' : 'キャンセル済'}
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-[#f8f9fa] border border-[#d0d0d0] p-3 text-xs text-[#7a7a7a] space-y-2 mb-4 font-mono tracking-wider">
+              <div className="flex justify-between">
+                <span>利用ポイント:</span>
+                <span>{item.pointsUsed} pt</span>
+              </div>
+              <div className="flex justify-between">
+                <span>付与予定ポイント <span className="text-[10px] text-[#a0a0a0]">(3日後)</span>:</span>
+                <span>+{item.pointsToGrant} pt</span>
+              </div>
+              <div className="flex justify-between">
+                <span>クーポン利用:</span>
+                <span>{item.couponUsed ? 'あり' : 'なし'}</span>
+              </div>
+            </div>
+
+            {item.status === 'COMPLETED' && (
+              <button
+                onClick={() => handleCancel(item.id)}
+                disabled={cancelingId === item.id}
+                className="w-full py-3 border border-[#d0d0d0] text-[#7a7a7a] text-xs font-bold tracking-widest flex items-center justify-center hover:bg-[#f8f9fa] transition disabled:opacity-50"
+              >
+                <XCircle className="w-4 h-4 mr-2 stroke-1" />
+                {cancelingId === item.id ? '処理中...' : '決済を取り消す'}
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};

@@ -10,6 +10,7 @@ import { AdminBlog } from "./pages/admin/AdminBlog";
 import { AdminCoupon } from "./pages/admin/AdminCoupon";
 import { AdminScan } from "./pages/admin/AdminScan";
 import { AdminHistory } from "./pages/admin/AdminHistory";
+import { AdminMemberHistory } from "./pages/admin/AdminMemberHistory";
 
 export const router = createBrowserRouter([
   {
@@ -33,6 +34,7 @@ export const router = createBrowserRouter([
       { path: "coupon", Component: AdminCoupon },
       { path: "scan", Component: AdminScan },
       { path: "history", Component: AdminHistory },
+      { path: "history/:memberId", Component: AdminMemberHistory },
     ],
   },
 ]);

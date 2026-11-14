@@ -33,13 +33,17 @@ public class AdminPaymentController {
         return ResponseEntity.ok().build();
     }
 
-    /** GET /api/admin/payments?name=xxx&exact=false&page=0&size=20 — 決済履歴 */
+    /**
+     * GET /api/admin/payments?memberId=1&page=0&size=20 — 会員別決済履歴
+     * GET /api/admin/payments?name=xxx&exact=false&page=0&size=20 — 名前検索（memberId 未指定時）
+     */
     @GetMapping
     public ResponseEntity<Page<PaymentHistoryItem>> getPayments(
+            @RequestParam(required = false) Long memberId,
             @RequestParam(required = false) String name,
             @RequestParam(defaultValue = "false") boolean exact,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        return ResponseEntity.ok(paymentService.getPaymentHistory(name, exact, page, size));
+        return ResponseEntity.ok(paymentService.getPaymentHistory(memberId, name, exact, page, size));
     }
 }

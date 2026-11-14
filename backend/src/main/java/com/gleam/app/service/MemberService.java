@@ -5,8 +5,12 @@ import com.gleam.app.dto.*;
 import com.gleam.app.entity.FriendInvitation;
 import com.gleam.app.entity.Member;
 import com.gleam.app.repository.*;
+import com.gleam.app.repository.PurchaseRepository.MemberPurchaseSummary;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -114,6 +118,47 @@ public class MemberService {
             .toList();
 
         return MemberScanDto.from(member, availableCoupons);
+    }
+
+    /**
+     * 管理者用：会員一覧（決済履歴の入口）。
+     * 名前で検索（exact=true で完全一致、false で部分一致）し、
+     * 最終購入日の新しい順（未購入は末尾）に返す。
+     */
+    public Page<AdminMemberSummaryDto> searchMembers(String name, boolean exact, int page, int size) {
+        Sort sort = Sort.by(
+            Sort.Order.desc("lastPurchaseAt").nullsLast(),
+            Sort.Order.asc("memberNo")
+        );
+        PageRequest pageable = PageRequest.of(page, size, sort);
+
+        Page<Member> members;
+        if (name != null && !name.isBlank()) {
+            members = exact
+                ? memberRepository.findByName(name, pageable)
+                : memberRepository.findByNameContaining(name, pageable);
+        } else {
+            members = memberRepository.findAll(pageable);
+        }
+
+        Map<Long, MemberPurchaseSummary> summaries = summarizePurchases(
+            members.getContent().stream().map(Member::getId).toList());
+
+        return members.map(m -> AdminMemberSummaryDto.from(m, summaries.get(m.getId())));
+    }
+
+    /** 管理者用：会員IDで会員サマリを1件取得（会員別決済履歴画面のヘッダー用） */
+    public AdminMemberSummaryDto getAdminMemberSummary(Long memberId) {
+        Member member = findMemberById(memberId);
+        Map<Long, MemberPurchaseSummary> summaries = summarizePurchases(List.of(memberId));
+        return AdminMemberSummaryDto.from(member, summaries.get(memberId));
+    }
+
+    private Map<Long, MemberPurchaseSummary> summarizePurchases(List<Long> memberIds) {
+        if (memberIds.isEmpty()) return Map.of();
+        return purchaseRepository.summarizeCompletedByMemberIds(memberIds)
+            .stream()
+            .collect(Collectors.toMap(MemberPurchaseSummary::getMemberId, s -> s));
     }
 
     /**

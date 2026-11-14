@@ -235,8 +235,17 @@ public class PaymentService {
     }
 
     @Transactional(readOnly = true)
-    public Page<PaymentHistoryItem> getPaymentHistory(String name, boolean exact, int page, int size) {
+    public Page<PaymentHistoryItem> getPaymentHistory(Long memberId, String name, boolean exact, int page, int size) {
         PageRequest pageable = PageRequest.of(page, size);
+
+        // 会員IDが指定された場合はその会員の履歴のみ（名前検索は無視）
+        if (memberId != null) {
+            Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("会員が見つかりません: " + memberId));
+            return purchaseRepository
+                .findByMemberOrderByPurchasedAtDesc(member, pageable)
+                .map(PaymentHistoryItem::from);
+        }
 
         if (name != null && !name.isBlank()) {
             Page<Purchase> result = exact
