@@ -22,6 +22,18 @@ export const DiamondMemberPage = () => {
     }
   }, []);
 
+  // 表示中はブラウザ本体の背景も黒にし、画面下部の余白やバウンス時に白地が見えないようにする
+  useEffect(() => {
+    const prevBody = document.body.style.backgroundColor;
+    const prevHtml = document.documentElement.style.backgroundColor;
+    document.body.style.backgroundColor = '#111111';
+    document.documentElement.style.backgroundColor = '#111111';
+    return () => {
+      document.body.style.backgroundColor = prevBody;
+      document.documentElement.style.backgroundColor = prevHtml;
+    };
+  }, []);
+
   useEffect(() => {
     loadReferrals();
     // 友だちが登録を済ませて戻ってきた時に数字を更新する
@@ -71,7 +83,8 @@ export const DiamondMemberPage = () => {
   };
 
   return (
-    <div className="h-[100dvh] max-w-md mx-auto bg-[#111111] text-white font-sans flex flex-col">
+    // 黒背景は画面の高さ + 50px まで伸ばす（下端に白地が見えないようにするため）
+    <div className="min-h-[calc(100dvh+50px)] max-w-md mx-auto bg-[#111111] text-white font-sans flex flex-col pb-[50px]">
       {/* ヘッダー */}
       <header className="shrink-0 flex items-center justify-between px-5 h-12 border-b border-white/10">
         <span className="text-[11px] tracking-widest text-white/60">会員ページ</span>
@@ -80,7 +93,7 @@ export const DiamondMemberPage = () => {
       </header>
 
       {/* 1画面に収めるため、縦方向は flex で配分し、余った分は線画の上下に寄せる */}
-      <main className="flex-1 min-h-0 flex flex-col items-center px-6 pt-5 pb-5 overflow-y-auto">
+      <main className="flex-1 min-h-0 flex flex-col items-center px-6 pt-5 pb-5">
         {/* タイトル */}
         <p className="text-[10px] tracking-[0.5em] text-white/60 uppercase mb-2 pl-[0.5em]">Diamond Member</p>
         <h1 className="text-[22px] font-bold tracking-[0.25em] pl-[0.25em] mb-2">ダイヤモンド会員</h1>
