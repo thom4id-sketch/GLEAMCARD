@@ -1,4 +1,4 @@
-import { Crown } from 'lucide-react';
+import { Crown, Gem } from 'lucide-react';
 
 /**
  * 会員ランクの表示設定。配色は会員証画面（UserCard）と揃えている。
@@ -8,6 +8,12 @@ import { Crown } from 'lucide-react';
  *  - crowns: 王冠アイコンの数（ランクが高いほど多い）
  */
 const RANK_STYLES: Record<string, { badge: string; accent: string; label: string; crowns: number }> = {
+  DIAMOND: {
+    badge: 'bg-[#111111] text-white border-[#111111]',
+    accent: 'border-l-[#111111]',
+    label: 'DIAMOND',
+    crowns: -1, // 王冠ではなくダイヤアイコンを表示
+  },
   PLATINUM: {
     badge: 'bg-gradient-to-br from-[#f4f5f7] to-[#cdd1d8] text-[#2c3036] border-[#a0a0a0]',
     accent: 'border-l-[#b8bcc4]',
@@ -52,6 +58,9 @@ export const RankBadge = ({ rank, size = 'sm', className = '' }: Props) => {
     <span
       className={`inline-flex items-center gap-1 border font-bold tracking-widest font-serif shrink-0 ${sizeClass} ${style.badge} ${className}`}
     >
+      {style.crowns < 0 && (
+        <Gem className={size === 'md' ? 'w-3 h-3' : 'w-2.5 h-2.5'} strokeWidth={2} />
+      )}
       {style.crowns > 0 && (
         <span className="inline-flex -space-x-0.5">
           {Array.from({ length: style.crowns }).map((_, i) => (

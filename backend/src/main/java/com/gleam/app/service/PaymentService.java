@@ -156,7 +156,10 @@ public class PaymentService {
         long rewardedThisMonth = friendInvitationRepository
             .countReferralRewardsEarnedSince(invitation.getInviter(), startOfMonth);
 
-        if (rewardedThisMonth < MONTHLY_REFERRAL_LIMIT) {
+        // ダイヤモンド会員はアプリ経由で購入しないため紹介ポイントは付与しない（ステータス更新のみ）
+        boolean inviterUsesPoints = !invitation.getInviter().isDiamond();
+
+        if (inviterUsesPoints && rewardedThisMonth < MONTHLY_REFERRAL_LIMIT) {
             grantRepository.save(ScheduledPointGrant.builder()
                 .member(invitation.getInviter())
                 .amount(1000)

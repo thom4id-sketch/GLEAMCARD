@@ -7,7 +7,7 @@ export interface MemberDto {
   id: number;
   memberNo: string;
   name: string;
-  rank: string; // 'REGULAR' | 'GOLD' | 'PLATINUM'
+  rank: string; // 'REGULAR' | 'SILVER' | 'GOLD' | 'PLATINUM' | 'DIAMOND'
   pointRate: number;
   points: number;
   annualPurchaseAmount: number;

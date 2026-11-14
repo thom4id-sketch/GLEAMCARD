@@ -161,6 +161,53 @@ public class MemberService {
         return AdminMemberSummaryDto.from(member, summaries.get(memberId));
     }
 
+    /**
+     * 管理者用：会員をダイヤモンド会員にする。
+     * ダイヤモンドは購入額では到達できず、この操作でのみ付与される。
+     */
+    @Transactional
+    public AdminMemberSummaryDto setDiamond(Long memberId) {
+        Member member = findMemberById(memberId);
+        if (!member.isDiamond()) {
+            member.setRank(Member.Rank.DIAMOND);
+            member.setRankExpiresAt(null);
+            member.setRankKeepUntil(null);
+            memberRepository.save(member);
+            log.info("ダイヤモンド会員に変更: memberNo={}", member.getMemberNo());
+        }
+        return getAdminMemberSummary(memberId);
+    }
+
+    /**
+     * 管理者用：ダイヤモンド会員を解除し、3年間の購入実績に基づく適正ランクへ戻す。
+     */
+    @Transactional
+    public AdminMemberSummaryDto clearDiamond(Long memberId) {
+        Member member = findMemberById(memberId);
+        if (member.isDiamond()) {
+            int currentYear = LocalDate.now().getYear();
+            OffsetDateTime windowStart = OffsetDateTime.of(currentYear - 2, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+            int rawSum = purchaseRepository.sumCompletedAmountSince(member, windowStart);
+            int taxExcluded = rawSum * 10 / 11;
+            Member.Rank properRank = Member.Rank.fromThreeYearPurchase(taxExcluded);
+
+            member.setRank(properRank);
+            member.setAnnualPurchaseAmount(taxExcluded);
+            member.setRankExpiresAt(properRank == Member.Rank.REGULAR ? null : LocalDate.of(currentYear, 12, 31));
+            memberRepository.save(member);
+            log.info("ダイヤモンド会員を解除: memberNo={} → {}", member.getMemberNo(), properRank);
+        }
+        return getAdminMemberSummary(memberId);
+    }
+
+    /** 自分の友達紹介状況（紹介リンク経由で登録完了した人数） */
+    public ReferralSummaryDto getMyReferralSummary(Long memberId) {
+        Member member = findMemberById(memberId);
+        long count = friendInvitationRepository
+            .countByInviterAndStatusNot(member, FriendInvitation.Status.PENDING);
+        return new ReferralSummaryDto(count);
+    }
+
     private Map<Long, MemberPurchaseSummary> summarizePurchases(List<Long> memberIds) {
         if (memberIds.isEmpty()) return Map.of();
         return purchaseRepository.summarizeByMemberIds(memberIds)
@@ -185,7 +232,8 @@ public class MemberService {
 
         for (Member member : members) {
             Member.Rank oldRank = member.getRank();
-            if (oldRank == Member.Rank.REGULAR) continue;
+            // REGULAR は降格先が無く、DIAMOND は管理者操作でのみ変更するためスキップ
+            if (oldRank == Member.Rank.REGULAR || oldRank == Member.Rank.DIAMOND) continue;
 
             int rawSum = purchaseRepository.sumCompletedAmountSince(member, windowStart);
             int taxExcluded = rawSum * 10 / 11;

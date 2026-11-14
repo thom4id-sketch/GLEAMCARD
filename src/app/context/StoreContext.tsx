@@ -6,7 +6,7 @@ import { api } from '../lib/api';
 // 型定義（バックエンド DTO をフロントの型にマッピング）
 // ──────────────────────────────────────────────
 
-export type Rank = 'Regular' | 'Silver' | 'Gold' | 'Platinum';
+export type Rank = 'Regular' | 'Silver' | 'Gold' | 'Platinum' | 'Diamond';
 
 export interface User {
   id: string;
@@ -100,6 +100,7 @@ interface PointHistoryApi {
 // ──────────────────────────────────────────────
 
 function rankFromStr(r: string): Rank {
+  if (r === 'DIAMOND') return 'Diamond';
   if (r === 'PLATINUM') return 'Platinum';
   if (r === 'GOLD') return 'Gold';
   if (r === 'SILVER') return 'Silver';

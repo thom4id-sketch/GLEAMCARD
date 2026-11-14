@@ -41,6 +41,12 @@ public class UserController {
         return ResponseEntity.ok(memberService.getMyPointHistory(memberId));
     }
 
+    /** GET /api/me/referrals — 友達紹介状況（紹介成立人数） */
+    @GetMapping("/referrals")
+    public ResponseEntity<ReferralSummaryDto> getMyReferrals(@AuthenticationPrincipal Long memberId) {
+        return ResponseEntity.ok(memberService.getMyReferralSummary(memberId));
+    }
+
     /** GET /api/me/invite-link — 友達招待リンク発行 */
     @GetMapping("/invite-link")
     public ResponseEntity<InviteLinkResponse> getInviteLink(@AuthenticationPrincipal Long memberId) {

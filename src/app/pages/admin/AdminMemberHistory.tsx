@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { format, parseISO } from 'date-fns';
-import { ArrowLeft, XCircle, FileText } from 'lucide-react';
+import { ArrowLeft, XCircle, FileText, Gem } from 'lucide-react';
 import { api } from '../../lib/api';
 import { HistorySearchBar } from '../../components/admin/HistorySearchBar';
 import { RankBadge } from '../../components/admin/RankBadge';
@@ -41,6 +41,7 @@ export const AdminMemberHistory = () => {
   const [totalElements, setTotalElements] = useState(0);
   const [error, setError] = useState('');
   const [cancelingId, setCancelingId] = useState<number | null>(null);
+  const [diamondUpdating, setDiamondUpdating] = useState(false);
 
   // 検索バー（会員一覧と同じ機能）：検索すると会員一覧へ戻って絞り込み結果を表示する
   const [filterName, setFilterName] = useState('');
@@ -100,6 +101,27 @@ export const AdminMemberHistory = () => {
     if (name) { params.set('name', name); params.set('exact', String(exactMatch)); }
     const query = params.toString();
     navigate(`/admin/history${query ? `?${query}` : ''}`);
+  };
+
+  const handleToggleDiamond = async () => {
+    if (!member || !memberId || diamondUpdating) return;
+    const isDiamond = member.rank === 'DIAMOND';
+    const confirmMsg = isDiamond
+      ? `${member.name} 様のダイヤモンド会員を解除しますか？\n（3年間の購入実績に応じた通常ランクに戻ります）`
+      : `${member.name} 様をダイヤモンド会員にしますか？\n（ダイヤモンド会員は専用ページのみ表示され、通常の会員証は利用できなくなります）`;
+    if (!window.confirm(confirmMsg)) return;
+
+    setDiamondUpdating(true);
+    try {
+      const updated = isDiamond
+        ? await api.delete<AdminMemberSummary>(`/api/admin/members/id/${memberId}/diamond`)
+        : await api.put<AdminMemberSummary>(`/api/admin/members/id/${memberId}/diamond`);
+      setMember(updated);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'ランクの変更に失敗しました');
+    } finally {
+      setDiamondUpdating(false);
+    }
   };
 
   const handleCancel = async (id: number) => {
@@ -171,6 +193,22 @@ export const AdminMemberHistory = () => {
                 <div className="font-bold">{member.points.toLocaleString()} pt</div>
               </div>
             </div>
+
+            <button
+              type="button"
+              onClick={handleToggleDiamond}
+              disabled={diamondUpdating}
+              className={`mt-4 w-full py-3 text-xs font-bold tracking-widest flex items-center justify-center border transition disabled:opacity-50 ${
+                member.rank === 'DIAMOND'
+                  ? 'bg-transparent border-white/60 text-white hover:bg-white/10'
+                  : 'bg-[#111111] border-[#111111] text-white hover:bg-black'
+              }`}
+            >
+              <Gem className="w-4 h-4 mr-2" strokeWidth={1.5} />
+              {diamondUpdating
+                ? '処理中...'
+                : member.rank === 'DIAMOND' ? 'ダイヤモンド会員解除' : 'ダイヤモンド会員にする'}
+            </button>
           </div>
         )}
 

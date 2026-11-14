@@ -73,11 +73,22 @@ public class Member {
         updatedAt = OffsetDateTime.now();
     }
 
+    /** ダイヤモンド会員かどうか（管理者操作でのみ付与される特別ランク） */
+    public boolean isDiamond() {
+        return rank == Rank.DIAMOND;
+    }
+
+    /**
+     * 会員ランク。
+     * DIAMOND は購入額では到達せず、管理者が明示的に付与・解除する特別ランク。
+     * ダイヤモンド会員はアプリ経由で購入しないため、ポイント付与率は実質使用されない。
+     */
     public enum Rank {
-        REGULAR, SILVER, GOLD, PLATINUM;
+        REGULAR, SILVER, GOLD, PLATINUM, DIAMOND;
 
         public double getPointRate() {
             return switch (this) {
+                case DIAMOND  -> 0.10;
                 case PLATINUM -> 0.10;
                 case GOLD     -> 0.10;
                 case SILVER   -> 0.08;
@@ -85,7 +96,7 @@ public class Member {
             };
         }
 
-        /** 3年間累計購入額（税抜き）でランクを判定。 */
+        /** 3年間累計購入額（税抜き）でランクを判定。DIAMOND はここからは返らない。 */
         public static Rank fromThreeYearPurchase(int taxExcludedAmount) {
             if (taxExcludedAmount >= 1_500_000) return PLATINUM;
             if (taxExcludedAmount >= 1_000_000) return GOLD;

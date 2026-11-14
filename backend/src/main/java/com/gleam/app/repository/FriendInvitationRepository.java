@@ -12,6 +12,9 @@ import java.util.List;
 public interface FriendInvitationRepository extends JpaRepository<FriendInvitation, Long> {
     List<FriendInvitation> findByInviter(Member inviter);
 
+    /** 招待者の紹介成立数（被招待者が会員登録を完了した件数 = PENDING 以外） */
+    long countByInviterAndStatusNot(Member inviter, FriendInvitation.Status status);
+
     /**
      * 指定期間内に招待者が獲得した紹介ポイント件数（マルチアカウント対策の月次上限チェック用）。
      * PURCHASED / REWARDED になった件数を返す。

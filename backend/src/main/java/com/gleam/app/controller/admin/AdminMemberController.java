@@ -33,6 +33,18 @@ public class AdminMemberController {
         return ResponseEntity.ok(memberService.getAdminMemberSummary(id));
     }
 
+    /** PUT /api/admin/members/id/{id}/diamond — ダイヤモンド会員にする */
+    @PutMapping("/id/{id}/diamond")
+    public ResponseEntity<AdminMemberSummaryDto> setDiamond(@PathVariable Long id) {
+        return ResponseEntity.ok(memberService.setDiamond(id));
+    }
+
+    /** DELETE /api/admin/members/id/{id}/diamond — ダイヤモンド会員を解除（適正ランクへ戻す） */
+    @DeleteMapping("/id/{id}/diamond")
+    public ResponseEntity<AdminMemberSummaryDto> clearDiamond(@PathVariable Long id) {
+        return ResponseEntity.ok(memberService.clearDiamond(id));
+    }
+
     /** GET /api/admin/members/{memberNo} — QRスキャン後の会員情報取得 */
     @GetMapping("/{memberNo}")
     public ResponseEntity<MemberScanDto> getMemberByNo(@PathVariable String memberNo) {

@@ -110,8 +110,12 @@ public class AuthService {
             friendInvitationRepository.findById(invitationId).ifPresent(invitation -> {
                 if (invitation.getStatus() != FriendInvitation.Status.PENDING) return;
 
-                // 招待クーポン付与
-                couponService.issueFriendCoupon(member, invitation);
+                // 招待クーポン付与（ダイヤモンド会員からの紹介は専用の5%OFFクーポン）
+                if (invitation.getInviter().isDiamond()) {
+                    couponService.issueDiamondReferralCoupon(member, invitation);
+                } else {
+                    couponService.issueFriendCoupon(member, invitation);
+                }
 
                 // 招待ステータス更新
                 invitation.setInvitee(member);

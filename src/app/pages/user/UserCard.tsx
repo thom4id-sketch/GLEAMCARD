@@ -13,6 +13,7 @@ export const UserCard = () => {
     Silver: "bg-gradient-to-br from-[#7a7a7a] to-[#b0b0b0] text-white",
     Gold: "bg-[#b89b5e] text-white",
     Platinum: "bg-gradient-to-br from-[#f4f5f7] to-[#cdd1d8] text-[#2c3036]",
+    Diamond: "bg-[#111111] text-white",
   };
 
   const rankLabels = {
@@ -20,6 +21,7 @@ export const UserCard = () => {
     Silver: "SILVER",
     Gold: "GOLD",
     Platinum: "PLATINUM",
+    Diamond: "DIAMOND",
   };
 
   return (

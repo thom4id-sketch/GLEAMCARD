@@ -3,6 +3,7 @@ import { router } from './routes';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { StoreProvider, useStore } from './context/StoreContext';
 import { RegisterPage } from './pages/auth/RegisterPage';
+import { DiamondMemberPage } from './pages/user/DiamondMemberPage';
 import { LoadingScreen } from './components/LoadingScreen';
 
 /** 投稿データ読み込み完了までローディングを継続するゲート */
@@ -14,7 +15,7 @@ const DataGate = () => {
 
 /** 認証状態に応じてコンテンツを切り替えるゲート */
 const AuthGate = () => {
-  const { status, error } = useAuth();
+  const { status, error, currentUser, isAdmin } = useAuth();
 
   if (status === 'loading') {
     return <LoadingScreen />;
@@ -36,6 +37,11 @@ const AuthGate = () => {
   }
 
   // status === 'ready'
+  // ダイヤモンド会員（ユーザー向けLIFF）は通常の会員画面へは遷移させず、専用ページのみ表示する
+  if (!isAdmin && currentUser?.rank === 'DIAMOND') {
+    return <DiamondMemberPage />;
+  }
+
   return (
     <StoreProvider>
       <DataGate />

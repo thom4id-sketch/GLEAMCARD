@@ -112,6 +112,26 @@ public class CouponService {
             .build());
     }
 
+    /**
+     * ダイヤモンド会員からの紹介で登録した会員向けの専用クーポンを付与する。
+     * 初回のお買い物が 5% OFF、利用期限なし。
+     * AuthService から呼び出す。
+     */
+    public void issueDiamondReferralCoupon(Member invitee, FriendInvitation invitation) {
+        couponRepository.save(Coupon.builder()
+            .member(invitee)
+            .name("ダイヤモンド会員ご紹介クーポン")
+            .discountType(Coupon.DiscountType.PERCENT)
+            .discountValue(5)
+            .discountDesc("初回のお買い物が5%OFF")
+            .couponType(Coupon.CouponType.FRIEND)
+            .isUsed(false)
+            .usageCondition("初回のお買い物限定")
+            .expiresAt(null)
+            .invitation(invitation)
+            .build());
+    }
+
     @Transactional(readOnly = true)
     public List<CouponGroupDto> getCouponHistory() {
         return couponRepository.findDistributedCouponGroups().stream()
