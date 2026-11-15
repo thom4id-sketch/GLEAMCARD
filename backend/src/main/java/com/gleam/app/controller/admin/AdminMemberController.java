@@ -2,6 +2,7 @@ package com.gleam.app.controller.admin;
 
 import com.gleam.app.dto.AdminMemberSummaryDto;
 import com.gleam.app.dto.MemberScanDto;
+import com.gleam.app.dto.ReferralSummaryDto;
 import com.gleam.app.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -37,6 +38,12 @@ public class AdminMemberController {
     @GetMapping("/id/{id}")
     public ResponseEntity<AdminMemberSummaryDto> getMemberById(@PathVariable Long id) {
         return ResponseEntity.ok(memberService.getAdminMemberSummary(id));
+    }
+
+    /** GET /api/admin/members/id/{id}/referrals — 会員の紹介状況（紹介人数と、うち購入に至った人数） */
+    @GetMapping("/id/{id}/referrals")
+    public ResponseEntity<ReferralSummaryDto> getMemberReferrals(@PathVariable Long id) {
+        return ResponseEntity.ok(memberService.getMyReferralSummary(id));
     }
 
     /** PUT /api/admin/members/id/{id}/diamond — ダイヤモンド会員にする */

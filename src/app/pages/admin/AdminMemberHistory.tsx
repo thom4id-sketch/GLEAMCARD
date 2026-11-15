@@ -24,12 +24,19 @@ interface PaymentHistoryItem {
 
 type PageResponse = PageResponseBase<PaymentHistoryItem>;
 
+/** 会員の紹介状況（紹介人数と、うち紹介クーポンで購入に至った人数） */
+interface ReferralSummary {
+  referralCount: number;
+  purchaseCount: number;
+}
+
 /** 決済履歴管理：会員ごとの決済履歴（取り消し操作もここで行う） */
 export const AdminMemberHistory = () => {
   const navigate = useNavigate();
   const { memberId } = useParams<{ memberId: string }>();
 
   const [member, setMember] = useState<AdminMemberSummary | null>(null);
+  const [referrals, setReferrals] = useState<ReferralSummary | null>(null);
   const [items, setItems] = useState<PaymentHistoryItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -53,6 +60,11 @@ export const AdminMemberHistory = () => {
   const load = useCallback(async (id: string) => {
     setLoading(true);
     setError('');
+    // 紹介状況は補助情報なので、取得に失敗しても画面全体はエラーにしない
+    setReferrals(null);
+    api.get<ReferralSummary>(`/api/admin/members/id/${id}/referrals`)
+      .then(setReferrals)
+      .catch(() => setReferrals(null));
     try {
       const [m, res] = await Promise.all([
         api.get<AdminMemberSummary>(`/api/admin/members/id/${id}`),
@@ -194,6 +206,20 @@ export const AdminMemberHistory = () => {
                 <div className="font-bold">{member.points.toLocaleString()} pt</div>
               </div>
             </div>
+
+            {/* 紹介状況：ダイヤモンド会員、または紹介実績のある会員に表示 */}
+            {referrals && (member.rank === 'DIAMOND' || referrals.referralCount > 0) && (
+              <div className="mt-3 pt-3 border-t border-white/30 grid grid-cols-3 gap-2 text-[10px] tracking-wider font-mono">
+                <div>
+                  <div className="text-white/60 mb-0.5">紹介人数</div>
+                  <div className="font-bold">{referrals.referralCount} 名</div>
+                </div>
+                <div>
+                  <div className="text-white/60 mb-0.5">うち購入人数</div>
+                  <div className="font-bold">{referrals.purchaseCount} 名</div>
+                </div>
+              </div>
+            )}
 
             <button
               type="button"

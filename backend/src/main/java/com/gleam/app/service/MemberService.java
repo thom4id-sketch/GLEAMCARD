@@ -219,7 +219,10 @@ public class MemberService {
         return getAdminMemberSummary(memberId);
     }
 
-    /** 自分の友達紹介状況（紹介リンク経由で登録完了した人数と、うちクーポンを利用して購入した人数） */
+    /**
+     * 会員の友達紹介状況（紹介リンク経由で登録完了した人数と、うちクーポンを利用して購入した人数）。
+     * 会員本人の画面と、管理者の会員別画面の両方から使う。
+     */
     public ReferralSummaryDto getMyReferralSummary(Long memberId) {
         Member member = findMemberById(memberId);
         long referralCount = friendInvitationRepository
