@@ -48,6 +48,16 @@ public class FriendInvitation {
     @Column(name = "purchased_at")
     private OffsetDateTime purchasedAt;
 
+    /**
+     * 紹介クーポンを利用した有効な購入（購入人数のカウント用）。
+     * クーポン利用時にセットし、その購入がキャンセルされたら null に戻す。
+     * 紹介ポイントの不正防止用の status とは独立して管理する
+     * （status はキャンセルされても PURCHASED のまま）。
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "coupon_purchase_id")
+    private Purchase couponPurchase;
+
     @PrePersist
     protected void onCreate() {
         createdAt = OffsetDateTime.now();

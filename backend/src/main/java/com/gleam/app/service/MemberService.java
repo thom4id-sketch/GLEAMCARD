@@ -219,12 +219,14 @@ public class MemberService {
         return getAdminMemberSummary(memberId);
     }
 
-    /** 自分の友達紹介状況（紹介リンク経由で登録完了した人数） */
+    /** 自分の友達紹介状況（紹介リンク経由で登録完了した人数と、うちクーポンを利用して購入した人数） */
     public ReferralSummaryDto getMyReferralSummary(Long memberId) {
         Member member = findMemberById(memberId);
-        long count = friendInvitationRepository
+        long referralCount = friendInvitationRepository
             .countByInviterAndStatusNot(member, FriendInvitation.Status.PENDING);
-        return new ReferralSummaryDto(count);
+        long purchaseCount = friendInvitationRepository
+            .countByInviterAndCouponPurchaseIsNotNull(member);
+        return new ReferralSummaryDto(referralCount, purchaseCount);
     }
 
     private Map<Long, MemberPurchaseSummary> summarizePurchases(List<Long> memberIds) {

@@ -22,6 +22,10 @@ import java.time.ZoneOffset;
  * - 紹介ポイントは invitation.canScheduleReferralPoints()（status==REGISTERED）のときのみ発生。
  * - 決済取り消し時、クーポンを未使用に戻しても invitation.status は PURCHASED のまま維持。
  * - 招待者1人につき月 MONTHLY_REFERRAL_LIMIT 件を上限とする。
+ *
+ * 【紹介の購入人数カウント】
+ * - 紹介クーポン利用時に invitation.couponPurchase へその購入を記録し、
+ *   購入がキャンセルされたら null に戻す（＝カウント無効）。上記の status とは独立。
  */
 @Service
 @RequiredArgsConstructor
@@ -148,6 +152,11 @@ public class PaymentService {
      * invitation.status が REGISTERED のときのみ招待者へポイントをスケジュールする。
      */
     private void processFriendReferral(FriendInvitation invitation, Purchase purchase, OffsetDateTime now) {
+        // 購入人数のカウント用に、クーポンを利用した購入を記録する
+        // （キャンセル後の再利用時も記録し直す。紹介ポイントの判定とは独立）
+        invitation.setCouponPurchase(purchase);
+        friendInvitationRepository.save(invitation);
+
         if (!invitation.canScheduleReferralPoints()) return;
 
         // 月次上限チェック
@@ -216,6 +225,15 @@ public class PaymentService {
             coupon.setUsedAt(null);
             couponRepository.save(coupon);
             // FriendInvitation.status は PURCHASED のまま → 再使用しても紹介ポイント発生しない
+
+            // 購入人数のカウントは無効にする（この購入を記録している場合のみ）
+            FriendInvitation invitation = coupon.getInvitation();
+            if (invitation != null
+                    && invitation.getCouponPurchase() != null
+                    && invitation.getCouponPurchase().getId().equals(purchase.getId())) {
+                invitation.setCouponPurchase(null);
+                friendInvitationRepository.save(invitation);
+            }
         }
 
         // 4. 未実行のスケジュール付与をキャンセル

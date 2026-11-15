@@ -15,6 +15,9 @@ public interface FriendInvitationRepository extends JpaRepository<FriendInvitati
     /** 招待者の紹介成立数（被招待者が会員登録を完了した件数 = PENDING 以外） */
     long countByInviterAndStatusNot(Member inviter, FriendInvitation.Status status);
 
+    /** 招待者の購入人数（紹介クーポンを利用した有効な購入がある件数。キャンセル分は含まない） */
+    long countByInviterAndCouponPurchaseIsNotNull(Member inviter);
+
     /**
      * 指定期間内に招待者が獲得した紹介ポイント件数（マルチアカウント対策の月次上限チェック用）。
      * PURCHASED / REWARDED になった件数を返す。

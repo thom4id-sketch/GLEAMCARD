@@ -17,15 +17,18 @@ interface Props {
 export const DiamondMemberPage = ({ onClose }: Props) => {
   const { currentUser } = useAuth();
   const [referralCount, setReferralCount] = useState<number | null>(null);
+  const [purchaseCount, setPurchaseCount] = useState<number | null>(null);
   const [sharing, setSharing] = useState(false);
   const [notice, setNotice] = useState<{ text: string; url?: string } | null>(null);
 
   const loadReferrals = useCallback(async () => {
     try {
-      const res = await api.get<{ referralCount: number }>('/api/me/referrals');
+      const res = await api.get<{ referralCount: number; purchaseCount: number }>('/api/me/referrals');
       setReferralCount(res.referralCount);
+      setPurchaseCount(res.purchaseCount ?? 0);
     } catch {
       setReferralCount(0);
+      setPurchaseCount(0);
     }
   }, []);
 
@@ -142,19 +145,26 @@ export const DiamondMemberPage = ({ onClose }: Props) => {
           </svg>
         </div>
 
-        {/* 紹介数・特典 */}
+        {/* 紹介数・購入人数・特典 */}
         <div className="w-full shrink-0 grid grid-cols-2 border border-white/40 mb-4">
-          <div className="py-5 px-3 text-center border-r border-white/40">
+          <div className="py-4 px-3 text-center border-r border-white/40">
             <p className="text-[10px] tracking-widest text-white/70 mb-2">現在までの紹介数</p>
             <p className="font-mono leading-none">
               <span className="text-4xl font-light">{referralCount ?? '–'}</span>
               <span className="text-xs ml-1 tracking-widest">名</span>
             </p>
           </div>
-          <div className="py-5 px-3 text-center">
-            <p className="text-[10px] tracking-widest text-white/70 mb-2">ご紹介された方の特典</p>
+          <div className="py-4 px-3 text-center">
+            <p className="text-[10px] tracking-widest text-white/70 mb-2">うちご購入された方</p>
             <p className="font-mono leading-none">
-              <span className="text-4xl font-light">{REFERRAL_DISCOUNT}</span>
+              <span className="text-4xl font-light">{purchaseCount ?? '–'}</span>
+              <span className="text-xs ml-1 tracking-widest">名</span>
+            </p>
+          </div>
+          <div className="col-span-2 py-2.5 px-3 flex items-baseline justify-center gap-3 border-t border-white/40">
+            <p className="text-[10px] tracking-widest text-white/70">ご紹介された方の特典</p>
+            <p className="font-mono leading-none">
+              <span className="text-xl font-light">{REFERRAL_DISCOUNT}</span>
               <span className="text-xs ml-1 tracking-widest">% OFF</span>
             </p>
           </div>
