@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router';
 import { format, parseISO } from 'date-fns';
 import { ArrowLeft, XCircle, FileText, Gem } from 'lucide-react';
 import { api } from '../../lib/api';
+import { pageMeta, type PageResponse as PageResponseBase } from '../../lib/page';
 import { HistorySearchBar, type FilterRank } from '../../components/admin/HistorySearchBar';
 import { RankBadge } from '../../components/admin/RankBadge';
 import { LoadMoreSentinel } from '../../components/admin/LoadMoreSentinel';
@@ -21,11 +22,7 @@ interface PaymentHistoryItem {
   status: string;
 }
 
-interface PageResponse {
-  content: PaymentHistoryItem[];
-  totalPages: number;
-  totalElements: number;
-}
+type PageResponse = PageResponseBase<PaymentHistoryItem>;
 
 /** 決済履歴管理：会員ごとの決済履歴（取り消し操作もここで行う） */
 export const AdminMemberHistory = () => {
@@ -64,8 +61,8 @@ export const AdminMemberHistory = () => {
       setMember(m);
       setItems(res.content);
       setPage(0);
-      setTotalPages(res.totalPages);
-      setTotalElements(res.totalElements);
+      setTotalPages(pageMeta(res).totalPages);
+      setTotalElements(pageMeta(res).totalElements);
     } catch (e) {
       setError(e instanceof Error ? e.message : '読み込みに失敗しました');
     } finally {
@@ -81,8 +78,8 @@ export const AdminMemberHistory = () => {
       const res = await fetchPage(memberId, next);
       setItems(prev => [...prev, ...res.content]);
       setPage(next);
-      setTotalPages(res.totalPages);
-      setTotalElements(res.totalElements);
+      setTotalPages(pageMeta(res).totalPages);
+      setTotalElements(pageMeta(res).totalElements);
     } catch (e) {
       alert(e instanceof Error ? e.message : '読み込みに失敗しました');
     } finally {

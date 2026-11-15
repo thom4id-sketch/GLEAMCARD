@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { format, parseISO } from 'date-fns';
 import { FileText, ChevronRight } from 'lucide-react';
 import { api } from '../../lib/api';
+import { pageMeta, type PageResponse as PageResponseBase } from '../../lib/page';
 import { HistorySearchBar, parseRanksParam, type FilterRank } from '../../components/admin/HistorySearchBar';
 import { RankBadge, getRankStyle } from '../../components/admin/RankBadge';
 import { LoadMoreSentinel } from '../../components/admin/LoadMoreSentinel';
@@ -19,11 +20,7 @@ export interface AdminMemberSummary {
   lastPurchaseAt: string | null;
 }
 
-interface PageResponse {
-  content: AdminMemberSummary[];
-  totalPages: number;
-  totalElements: number;
-}
+type PageResponse = PageResponseBase<AdminMemberSummary>;
 
 /** 決済履歴管理：会員一覧（ここから会員ごとの履歴へ遷移） */
 export const AdminHistory = () => {
@@ -62,8 +59,8 @@ export const AdminHistory = () => {
       const res = await fetchPage(name, exact, ranksStr, 0);
       setMembers(res.content);
       setPage(0);
-      setTotalPages(res.totalPages);
-      setTotalElements(res.totalElements);
+      setTotalPages(pageMeta(res).totalPages);
+      setTotalElements(pageMeta(res).totalElements);
     } catch (e) {
       setMembers([]);
       setError(e instanceof Error ? e.message : '読み込みに失敗しました');
@@ -80,8 +77,8 @@ export const AdminHistory = () => {
       const res = await fetchPage(queryName, queryExact, queryRanksStr, next);
       setMembers(prev => [...prev, ...res.content]);
       setPage(next);
-      setTotalPages(res.totalPages);
-      setTotalElements(res.totalElements);
+      setTotalPages(pageMeta(res).totalPages);
+      setTotalElements(pageMeta(res).totalElements);
     } catch (e) {
       alert(e instanceof Error ? e.message : '読み込みに失敗しました');
     } finally {
