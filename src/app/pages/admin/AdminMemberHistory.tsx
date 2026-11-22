@@ -136,7 +136,7 @@ export const AdminMemberHistory = () => {
   };
 
   const handleCancel = async (id: number) => {
-    if (!window.confirm('この決済を取り消しますか？\n（ポイントやクーポンの利用状況も元に戻ります）')) return;
+    if (!window.confirm('この決済を取り消しますか？\n（ポイントやクーポンの利用状況、この決済で上がった会員ランクも元に戻ります）')) return;
     setCancelingId(id);
     try {
       await api.put(`/api/admin/payments/${id}/cancel`);

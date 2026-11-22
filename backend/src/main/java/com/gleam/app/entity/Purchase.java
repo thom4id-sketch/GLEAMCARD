@@ -3,6 +3,7 @@ package com.gleam.app.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
 @Entity
@@ -48,6 +49,30 @@ public class Purchase {
 
     @Column(name = "canceled_at")
     private OffsetDateTime canceledAt;
+
+    /*
+     * この購入でランクが上がった場合のみ記録する、上がる前のランク情報（決済取り消し時に元へ戻す）。
+     * ランクが変わらなかった購入ではすべて null。
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "rank_before", length = 20)
+    private Member.Rank rankBefore;
+
+    /** この購入で上がった後のランク（取り消し時、現在のランクがこれと一致する場合のみ元へ戻す） */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "rank_after", length = 20)
+    private Member.Rank rankAfter;
+
+    @Column(name = "rank_expires_at_before")
+    private LocalDate rankExpiresAtBefore;
+
+    @Column(name = "rank_keep_until_before")
+    private LocalDate rankKeepUntilBefore;
+
+    /** この購入でランクが上がったかどうか */
+    public boolean causedRankUp() {
+        return rankBefore != null && rankAfter != null;
+    }
 
     @PrePersist
     protected void onCreate() {

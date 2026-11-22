@@ -134,6 +134,13 @@ public class PaymentService {
         Member.Rank newRank = Member.Rank.fromThreeYearPurchase(newTaxExcluded);
         boolean rankChanged = newRank.ordinal() > oldRank.ordinal();
         if (rankChanged) {
+            // 取り消し時に元へ戻せるよう、上がる前のランク情報を購入記録に残す
+            purchase.setRankBefore(oldRank);
+            purchase.setRankAfter(newRank);
+            purchase.setRankExpiresAtBefore(member.getRankExpiresAt());
+            purchase.setRankKeepUntilBefore(member.getRankKeepUntil());
+            purchaseRepository.save(purchase);
+
             member.setRank(newRank);
             member.setRankExpiresAt(LocalDate.of(currentYear, 12, 31));
             // Platinum 昇格時はランクキープ期限を翌年末に設定
@@ -244,12 +251,34 @@ public class PaymentService {
             }
         });
 
-        // 5. キャンセル後の3年間合計を再集計（ランクの取り消しは行わない）
+        // 5. キャンセル後の3年間合計を再集計
         int cancelYear = LocalDate.now().getYear();
         OffsetDateTime cancelWindowStart = OffsetDateTime.of(cancelYear - 2, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
         int rawSumAfterCancel = purchaseRepository.sumCompletedAmountSince(member, cancelWindowStart);
         member.setAnnualPurchaseAmount(rawSumAfterCancel * 10 / 11);
+
+        // 6. この購入でランクが上がっていた場合は、上がる前のランクに戻す
+        revertRankUp(member, purchase);
+
         memberRepository.save(member);
+    }
+
+    /**
+     * 取り消した購入でランクが上がっていた場合、購入前のランク・有効期限・ランクキープ期限に戻す。
+     * 取り消せるのは常に最新の購入なので、連続して取り消しても1段ずつ正しく戻る。
+     * 次の場合は戻さない：
+     * - ダイヤモンド会員（管理者操作でのみ変更するランク）
+     * - 購入後に年次リセット等でランクが変わっている（現在のランクが購入直後のランクと異なる）
+     * - ランク情報の記録が無い、この仕組みの導入前の購入
+     */
+    private void revertRankUp(Member member, Purchase purchase) {
+        if (!purchase.causedRankUp()) return;
+        if (member.isDiamond()) return;
+        if (member.getRank() != purchase.getRankAfter()) return;
+
+        member.setRank(purchase.getRankBefore());
+        member.setRankExpiresAt(purchase.getRankExpiresAtBefore());
+        member.setRankKeepUntil(purchase.getRankKeepUntilBefore());
     }
 
     @Transactional(readOnly = true)
